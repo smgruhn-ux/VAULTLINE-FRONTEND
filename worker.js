@@ -32,16 +32,10 @@ export default {
     if(!create&&!action&&method!=='GET')return json({error:'Method not allowed'},405);
 
     const upstream=new URL(target);
+    upstream.searchParams.set('storefront_token',token);
     if(method==='GET')upstream.searchParams.set('currency','USD');
 
-    const init={
-      method,
-      headers:{
-        Accept:'application/json',
-        Authorization:`Bearer ${token}`
-      }
-    };
-
+    const init={method,headers:{Accept:'application/json'}};
     if(method==='POST'){
       init.headers['Content-Type']='application/json';
       init.body=await request.text()||'{}';
@@ -58,13 +52,7 @@ export default {
         }catch{}
         return json({error:String(message),status:response.status},response.status);
       }
-      return new Response(text,{
-        status:response.status,
-        headers:{
-          'content-type':response.headers.get('content-type')||'application/json; charset=utf-8',
-          'cache-control':'no-store'
-        }
-      });
+      return new Response(text,{status:response.status,headers:{'content-type':response.headers.get('content-type')||'application/json; charset=utf-8','cache-control':'no-store'}});
     }catch(error){
       return json({error:`Fourthwall Storefront API request failed: ${error?.message||'unknown network error'}`},502);
     }

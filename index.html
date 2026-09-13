@@ -21,7 +21,8 @@
     </a>
     <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav id="site-nav" class="site-nav">
-      <a href="#shop">Shop</a>
+      <a href="#featured">Featured</a>
+      <a href="#shop">Vault Index</a>
       <a href="#drops">Drops</a>
       <a href="#about">The Vault</a>
       <button class="cart-button" id="cart-button">Cart <span id="cart-count">0</span></button>
@@ -48,18 +49,34 @@
     </section>
 
     <section class="marquee" aria-label="Brand statement">
-      <div>LIMITED DROPS · DARK ESSENTIALS · VAULTLINE · GIZZY GRAVES · IXXI · LIMITED DROPS · DARK ESSENTIALS ·</div>
+      <div>LIMITED DROPS · DARK ESSENTIALS · VAULTLINE · GIZZY GRAVES · IXXI · FRACTURE SYSTEM · LIMITED DROPS · DARK ESSENTIALS ·</div>
+    </section>
+
+    <section class="feature-piece" id="featured">
+      <div class="feature-copy">
+        <p class="eyebrow">FEATURED ARTIFACT / 004</p>
+        <h2>Northern<br>Fracture.</h2>
+        <p>Heavy relaxed structure. Compact front branding. Oversized Northern Star language across the back with controlled crimson fracture detailing.</p>
+        <div class="feature-meta"><span>VAULTLINE / OUTERWEAR</span><span>FROM $62</span></div>
+        <button class="btn btn-ghost" data-feature-slug="vaultline-northern-fracture-hoodie">Inspect piece</button>
+      </div>
+      <button class="feature-image" data-feature-slug="vaultline-northern-fracture-hoodie" aria-label="Inspect Northern Fracture Hoodie">
+        <span class="feature-index">004</span>
+        <img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp" alt="Vaultline Northern Fracture Hoodie">
+        <span class="feature-caption">NORTHERN STAR / FRACTURE / VAULTLINE</span>
+      </button>
     </section>
 
     <section class="shop-section" id="shop">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">SHOP THE VAULT</p>
+          <p class="eyebrow">VAULT INDEX / CURRENT INVENTORY</p>
           <h2>Current pieces</h2>
         </div>
         <button class="text-link" id="refresh-products">Refresh catalog</button>
       </div>
-      <div class="status" id="catalog-status">Loading live Fourthwall catalog…</div>
+      <div class="index-rule"><span>PIECE</span><span>COLORWAYS</span><span>PRICE / ACCESS</span></div>
+      <div class="status" id="catalog-status">Loading current Vaultline inventory…</div>
       <div class="product-grid" id="product-grid"></div>
     </section>
 
@@ -68,7 +85,7 @@
         <p class="eyebrow">DROP SYSTEM</p>
         <h2>Made to feel collected.<br>Not mass-produced.</h2>
       </div>
-      <p>Vaultline releases are treated like artifacts from the larger GRVEZ VAULT world — apparel, headwear, objects, and limited pieces with a shared visual language.</p>
+      <p>Vaultline releases are treated like artifacts from the larger GRVEZ VAULT world — apparel, headwear, objects, and limited pieces sharing one visual language without becoming copies of one another.</p>
     </section>
 
     <section class="manifesto" id="about">
@@ -80,6 +97,22 @@
       </div>
     </section>
   </main>
+
+  <aside class="quick-view" id="quick-view" aria-hidden="true">
+    <button class="quick-close" id="quick-close" aria-label="Close product view">×</button>
+    <div class="quick-image"><img id="quick-image" alt=""></div>
+    <div class="quick-copy">
+      <p class="eyebrow" id="quick-index">VAULTLINE / PIECE</p>
+      <h2 id="quick-name"></h2>
+      <p id="quick-description"></p>
+      <div class="quick-rule"></div>
+      <div class="quick-row"><span>COLORWAYS</span><div class="swatches" id="quick-swatches"></div></div>
+      <div class="quick-row"><span>VARIANTS</span><strong id="quick-variants"></strong></div>
+      <div class="quick-row"><span>PRICE</span><strong id="quick-price"></strong></div>
+      <a class="btn btn-primary btn-full" id="quick-buy" href="#">View & buy on Fourthwall</a>
+      <p class="quick-note">Secure checkout, taxes, order processing, and fulfillment remain handled by Fourthwall.</p>
+    </div>
+  </aside>
 
   <aside class="cart-drawer" id="cart-drawer" aria-hidden="true">
     <div class="cart-head">

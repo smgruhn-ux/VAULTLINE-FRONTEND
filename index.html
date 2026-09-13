@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101c" />
+  <meta name="description" content="Vaultline by Gizzy Graves — dark streetwear, limited drops, and pieces from inside the Vault." />
+  <title>Vaultline by Gizzy Graves</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="announcement">VAULTLINE BY GIZZY GRAVES <span>•</span> BUILT INSIDE THE VAULT</div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Vaultline home">
+      <img src="https://storage.googleapis.com/popshopprod-shop-renderer-creators-assets/resources/0e0db572-47ce-453b-a747-142819f87a74/a6b5c4aa7b0e1e52a09c8447d1467fee_69adcf5eddf5.png" alt="Vaultline" />
+      <span>VAULTLINE</span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav id="site-nav" class="site-nav">
+      <a href="#shop">Shop</a>
+      <a href="#drops">Drops</a>
+      <a href="#about">The Vault</a>
+      <button class="cart-button" id="cart-button">Cart <span id="cart-count">0</span></button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-noise"></div>
+      <div class="hero-copy">
+        <p class="eyebrow">VAULTLINE / 001</p>
+        <h1>WEAR WHAT<br><em>REMAINS.</em></h1>
+        <p class="hero-lede">Dark streetwear and objects pulled from the GRVEZ VAULT world. Built with fracture, restraint, and weight.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#shop">Enter the shop</a>
+          <a class="btn btn-ghost" href="#about">About Vaultline</a>
+        </div>
+      </div>
+      <div class="hero-mark" aria-hidden="true">
+        <div class="vault-ring"></div>
+        <div class="fracture"></div>
+        <span>VL</span>
+      </div>
+    </section>
+
+    <section class="marquee" aria-label="Brand statement">
+      <div>LIMITED DROPS · DARK ESSENTIALS · VAULTLINE · GIZZY GRAVES · IXXI · LIMITED DROPS · DARK ESSENTIALS ·</div>
+    </section>
+
+    <section class="shop-section" id="shop">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SHOP THE VAULT</p>
+          <h2>Current pieces</h2>
+        </div>
+        <button class="text-link" id="refresh-products">Refresh catalog</button>
+      </div>
+      <div class="status" id="catalog-status">Loading live Fourthwall catalog…</div>
+      <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <section class="drop-banner" id="drops">
+      <div>
+        <p class="eyebrow">DROP SYSTEM</p>
+        <h2>Made to feel collected.<br>Not mass-produced.</h2>
+      </div>
+      <p>Vaultline releases are treated like artifacts from the larger GRVEZ VAULT world — apparel, headwear, objects, and limited pieces with a shared visual language.</p>
+    </section>
+
+    <section class="manifesto" id="about">
+      <div class="manifesto-number">09 / 11</div>
+      <div class="manifesto-copy">
+        <p class="eyebrow">THE VAULTLINE STANDARD</p>
+        <h2>Not generic merch with a logo dropped on it.</h2>
+        <p>Vaultline is the wearable arm of the GRVEZ VAULT universe. The storefront is intentionally stripped back so the pieces, symbols, textures, and campaign visuals carry the weight.</p>
+      </div>
+    </section>
+  </main>
+
+  <aside class="cart-drawer" id="cart-drawer" aria-hidden="true">
+    <div class="cart-head">
+      <h2>Your cart</h2>
+      <button id="cart-close" aria-label="Close cart">×</button>
+    </div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total"><span>Total</span><strong id="cart-total">$0.00</strong></div>
+      <button class="btn btn-primary btn-full" id="checkout-button" disabled>Checkout with Fourthwall</button>
+      <p class="cart-note">Checkout, payment, taxes, orders, and fulfillment are handled securely by Fourthwall.</p>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <footer>
+    <div class="footer-brand">VAULTLINE</div>
+    <div class="footer-copy">BY GIZZY GRAVES</div>
+    <div class="footer-links">
+      <a href="https://vaultlineofficial.us" rel="noopener">Fourthwall store</a>
+      <a href="https://www.instagram.com/grvezvault" rel="noopener">Instagram</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -22,7 +22,7 @@ export default {
     const target=upstreamFor(url.pathname);
     if(!target)return env.ASSETS.fetch(request);
 
-    const token=env.FOURTHWALL_STOREFRONT_TOKEN;
+    const token=String(env.FOURTHWALL_STOREFRONT_TOKEN||'').trim();
     if(!token)return json({error:'Fourthwall Storefront token is not configured on this Worker.'},503);
 
     const method=request.method.toUpperCase();
@@ -35,7 +35,13 @@ export default {
     upstream.searchParams.set('storefront_token',token);
     if(method==='GET')upstream.searchParams.set('currency','USD');
 
-    const init={method,headers:{Accept:'application/json'}};
+    const init={
+      method,
+      headers:{
+        Accept:'application/json',
+        Authorization:`Bearer ${token}`
+      }
+    };
     if(method==='POST'){
       init.headers['Content-Type']='application/json';
       init.body=await request.text()||'{}';
@@ -44,6 +50,14 @@ export default {
     try{
       const response=await fetch(upstream,init);
       const text=await response.text();
+      if(!response.ok){
+        let message=`Fourthwall cart request failed (${response.status}).`;
+        try{
+          const parsed=JSON.parse(text);
+          message=parsed?.message||parsed?.error||message;
+        }catch{}
+        return json({error:message,status:response.status},response.status);
+      }
       return new Response(text,{status:response.status,headers:{'content-type':response.headers.get('content-type')||'application/json; charset=utf-8','cache-control':'no-store'}});
     }catch{
       return json({error:'Fourthwall Storefront API request failed.'},502);

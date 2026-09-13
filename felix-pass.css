@@ -1,0 +1,47 @@
+/* Felix-style typography pass using Cinzel for reliable web rendering */
+.brand,
+.hero h1,
+.collections-head h2,
+.section-heading h2,
+.collection-tile strong,
+.dossier-title h3,
+.lookbook-copy h2,
+.manifesto-copy h2,
+.quick-copy h2,
+.cart-head h2,
+.footer-brand{
+  font-family:"Cinzel", "Felix Titling", Georgia, serif !important;
+  font-weight:600 !important;
+  text-transform:uppercase !important;
+  letter-spacing:.07em !important;
+}
+
+.hero h1{
+  font-weight:500 !important;
+  letter-spacing:.11em !important;
+}
+
+.collections-head h2,
+.section-heading h2,
+.lookbook-copy h2,
+.manifesto-copy h2,
+.quick-copy h2,
+.cart-head h2{
+  line-height:.98 !important;
+}
+
+.collection-tile strong,
+.dossier-title h3{
+  letter-spacing:.055em !important;
+}
+
+@media(max-width:720px){
+  .hero h1{font-size:clamp(40px,10.7vw,54px)!important;letter-spacing:.085em!important}
+  .collections-head h2{font-size:36px!important;line-height:1!important}
+  .section-heading h2{font-size:40px!important;line-height:1!important}
+  .collection-tile strong{font-size:25px!important;line-height:1.02!important}
+  .dossier-title h3{font-size:20px!important;line-height:1.05!important}
+  .lookbook-copy h2{font-size:52px!important;line-height:1!important}
+  .manifesto-copy h2{font-size:38px!important;line-height:1!important}
+  .footer-brand{font-size:46px!important;line-height:1!important}
+}

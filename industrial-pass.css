@@ -1,0 +1,260 @@
+/* Vaultline industrial / grunge refinement */
+:root{
+  --industrial-black:#020303;
+  --industrial-charcoal:#0a0b0c;
+  --industrial-steel:#9aa0a6;
+  --industrial-line:rgba(220,224,228,.16);
+  --industrial-hardline:rgba(220,224,228,.28);
+  --industrial-crimson:#a83249;
+  --industrial-blue:#0b1626;
+}
+
+body{
+  background:
+    radial-gradient(circle at 18% 10%,rgba(27,36,49,.16),transparent 28rem),
+    radial-gradient(circle at 86% 74%,rgba(168,50,73,.06),transparent 30rem),
+    #020303;
+}
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none;
+  opacity:.13;
+  mix-blend-mode:screen;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.008) 0 1px,transparent 1px 13px);
+}
+
+.site-header{
+  background:rgba(2,3,3,.94)!important;
+  border-bottom:1px solid var(--industrial-hardline)!important;
+  box-shadow:0 8px 34px rgba(0,0,0,.36);
+}
+
+.site-header:after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent 0 7%,rgba(168,50,73,.8) 28%,rgba(255,255,255,.2) 52%,transparent 86%);
+  opacity:.34;
+}
+
+.brand{position:relative}
+.brand:after{
+  content:"09 / 11";
+  position:absolute;
+  top:100%;left:2px;
+  margin-top:3px;
+  font-family:Inter,sans-serif;
+  font-size:6px;
+  letter-spacing:.28em;
+  color:#5c6269;
+}
+
+.hero{
+  min-height:78vh!important;
+  background:
+    linear-gradient(104deg,transparent 0 42%,rgba(168,50,73,.06) 42.2% 42.8%,transparent 43%),
+    linear-gradient(16deg,transparent 0 64%,rgba(255,255,255,.025) 64.2% 64.8%,transparent 65%),
+    radial-gradient(circle at 73% 44%,rgba(32,40,52,.52),transparent 31%),
+    linear-gradient(120deg,#020303,#080a0c 48%,#020303)!important;
+}
+
+.hero:before{
+  background:
+    repeating-linear-gradient(90deg,transparent 0 79px,rgba(255,255,255,.018) 80px),
+    repeating-linear-gradient(0deg,transparent 0 79px,rgba(255,255,255,.012) 80px)!important;
+  opacity:.36;
+}
+
+.hero-copy{
+  position:relative;
+  padding:clamp(28px,4vw,56px);
+  border-left:1px solid rgba(255,255,255,.12);
+}
+
+.hero-copy:before{
+  content:"";
+  position:absolute;
+  left:-1px;top:18%;bottom:18%;width:2px;
+  background:linear-gradient(var(--industrial-crimson),transparent 82%);
+  box-shadow:0 0 20px rgba(168,50,73,.28);
+}
+
+.hero h1{letter-spacing:.12em!important;text-shadow:0 18px 40px rgba(0,0,0,.55)}
+.hero-tagline{color:#d3d5d6}
+.hero-lede{color:#858b91!important}
+.hero .btn{background:rgba(5,6,7,.56)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+
+.collections{
+  position:relative;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.012),transparent 22%),
+    #050606!important;
+}
+
+.collections:before{
+  content:"VAULTLINE / COLLECTION INDEX";
+  position:absolute;
+  right:24px;top:25px;
+  font-size:7px;
+  letter-spacing:.28em;
+  color:#555b61;
+}
+
+.collection-grid{gap:10px!important}
+.collection-tile{
+  min-height:260px!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.018),transparent 38%),
+    #070808!important;
+  border-color:var(--industrial-hardline)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018),0 18px 40px rgba(0,0,0,.16);
+  transition:transform .22s ease,border-color .22s ease,background .22s ease;
+}
+.collection-tile:hover{
+  transform:translateY(-3px);
+  border-color:rgba(168,50,73,.55)!important;
+  background:#090a0b!important;
+}
+.collection-tile strong{font-size:30px!important}
+.collection-tile p{color:#8a9096!important}
+.collection-tile:before{
+  content:"";
+  position:absolute;
+  inset:10px;
+  border:1px solid rgba(255,255,255,.035);
+  pointer-events:none;
+}
+
+.shop-section{
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px),
+    linear-gradient(180deg,#030404,#020303)!important;
+  background-size:120px 100%,100% 100%;
+  border-top:1px solid var(--industrial-line);
+}
+
+.section-heading{
+  padding-bottom:22px;
+  border-bottom:1px solid var(--industrial-hardline);
+}
+.section-heading h2{letter-spacing:.035em!important}
+.index-rule{background:#050606;padding:12px 8px!important}
+.status{padding-left:2px}
+
+.product-grid{gap:10px!important}
+.product-card{
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.02),transparent 30%),
+    #060707!important;
+  border-color:rgba(219,224,228,.19)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.22)!important;
+}
+.product-card:hover{border-color:rgba(219,224,228,.34)!important;box-shadow:0 24px 55px rgba(0,0,0,.34)!important}
+.dossier-head{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
+.dossier-number{color:var(--industrial-crimson)!important}
+.product-visual{
+  background:
+    linear-gradient(145deg,transparent 0 68%,rgba(168,50,73,.03) 68.5% 69.2%,transparent 70%),
+    radial-gradient(circle at 50% 42%,#1b1d20,#0a0b0c 58%,#040505)!important;
+}
+.product-visual:before{
+  content:"";
+  position:absolute;
+  left:16px;top:16px;width:22px;height:1px;
+  background:var(--industrial-crimson);
+  box-shadow:0 5px 0 rgba(255,255,255,.24),0 10px 0 rgba(255,255,255,.09);
+  z-index:2;
+}
+.colorway-label{color:#d3d5d6!important}
+.swatches span,.quick-swatch{border-radius:0!important}
+.dossier-foot{border-top-color:rgba(255,255,255,.13)!important}
+
+.lookbook{
+  background:#030404!important;
+  border-top:1px solid var(--industrial-hardline)!important;
+  border-bottom:1px solid var(--industrial-hardline)!important;
+}
+.lookbook-copy{
+  background:
+    linear-gradient(130deg,rgba(168,50,73,.05),transparent 42%),
+    #050606;
+}
+.lookbook-main,.lookbook-strip button{background:#060707!important}
+.lookbook-main img,.lookbook-strip img{filter:contrast(1.06) saturate(.86)}
+
+.manifesto{
+  background:
+    linear-gradient(110deg,rgba(168,50,73,.055),transparent 25%),
+    linear-gradient(180deg,#050606,#08111c)!important;
+  border-top:1px solid var(--industrial-hardline);
+}
+.manifesto-copy{position:relative;padding-left:22px}
+.manifesto-copy:before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(var(--industrial-crimson),transparent)}
+.about-mark{border-left:1px solid rgba(255,255,255,.1);padding-left:42px}
+
+footer{
+  position:relative;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
+    #020303!important;
+  background-size:140px 100%;
+  border-top:1px solid var(--industrial-hardline)!important;
+}
+footer:before{
+  content:"";
+  position:absolute;
+  top:0;left:0;width:26%;height:1px;
+  background:var(--industrial-crimson);
+}
+.footer-legal{border-top:1px solid rgba(255,255,255,.08);padding-top:18px!important}
+
+.quick-view,.cart-drawer{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.015),transparent 32%),
+    #050606!important;
+}
+.quick-copy{background:#050606!important}
+
+@media(max-width:720px){
+  .site-header{min-height:64px!important}
+  .brand:after{display:none}
+  .hero{min-height:650px!important;padding:70px 18px 50px!important}
+  .hero-copy{padding:24px 14px 26px!important;border-left:0!important;border-top:1px solid rgba(255,255,255,.09);border-bottom:1px solid rgba(255,255,255,.09)}
+  .hero-copy:before{left:0;top:-1px;bottom:auto;width:34%;height:1px;background:var(--industrial-crimson)}
+  .hero-sidecopy{display:none!important}
+  .hero-mark{opacity:.12!important}
+  .collections{padding-top:58px!important}
+  .collections:before{right:12px;top:20px;font-size:6px}
+  .collections-head{align-items:flex-start!important;gap:12px}
+  .collections-head h2{font-size:36px!important;max-width:78%}
+  .collection-grid{gap:8px!important}
+  .collection-tile{min-height:170px!important;padding:18px!important}
+  .collection-tile strong{font-size:22px!important;max-width:72%}
+  .shop-section{padding-inline:10px!important}
+  .section-heading{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end!important}
+  .section-heading h2{font-size:clamp(34px,10vw,48px)!important;line-height:.9!important;overflow-wrap:anywhere}
+  .text-link{font-size:7px!important;white-space:nowrap}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .product-card{min-width:0}
+  .dossier-head{padding:12px 10px 8px!important;min-height:80px!important}
+  .dossier-title h3{font-size:10px!important;line-height:1.12!important}
+  .product-visual{height:55vw!important}
+  .colorway-label,.colorway-row,.dossier-foot{margin-left:10px!important;margin-right:10px!important}
+  .lookbook-copy{padding:46px 20px!important}
+  .lookbook-copy h2{font-size:clamp(44px,15vw,70px)!important;letter-spacing:.1em!important;white-space:nowrap}
+  .manifesto{padding:58px 20px!important}
+  .manifesto-copy{padding-left:14px}
+  .manifesto-copy h2{font-size:clamp(36px,11vw,50px)!important;line-height:.92!important}
+  .about-mark{padding-left:0;border-left:0!important;border-top:1px solid rgba(255,255,255,.1);padding-top:30px;margin-top:36px!important;gap:28px!important}
+  footer{padding:40px 20px 28px!important;display:block!important}
+  .footer-brand{margin-bottom:8px}
+  .footer-copy{margin-bottom:22px}
+  .footer-links{margin-bottom:26px;flex-wrap:wrap}
+  .footer-legal{display:flex;flex-wrap:wrap;gap:14px 18px!important}
+}

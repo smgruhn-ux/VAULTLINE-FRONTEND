@@ -1,0 +1,23 @@
+/* Mobile fixes for editorial storefront */
+@media(max-width:720px){
+  .hero-copy{width:100%;max-width:100%;overflow:visible}
+  .hero h1{
+    width:100%;
+    max-width:100%;
+    white-space:nowrap;
+    font-size:clamp(38px,11.6vw,52px)!important;
+    letter-spacing:.075em!important;
+    line-height:.92!important;
+    text-align:center;
+  }
+
+  .site-nav{
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .site-nav a,.cart-button{
+    width:100%;
+    flex:0 0 auto;
+  }
+}

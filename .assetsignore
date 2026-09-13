@@ -1,0 +1,12 @@
+.git/
+.github/
+functions/
+worker.js
+wrangler.jsonc
+build-catalog.js
+.assetsignore
+README.md
+package.json
+package-lock.json
+tests/
+node_modules/

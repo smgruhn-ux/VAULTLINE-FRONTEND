@@ -1,61 +1,18 @@
 const STORE_URL='https://vaultlineofficial.us';
 const fallbackProducts=[
-{name:'In Ruin We Trust Slides',slug:'in-ruin-we-trust-slides',price:36,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/699ce60f-5fb4-4dcb-855a-74d3f865b6ee.png'},
-{name:'White Sigil Rib Tank',slug:'white-sigil-rib-tank',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/26b306d0-ab15-4974-9a9e-8729093d77d6.webp'},
-{name:'Crimson Thorn Baby Tee',slug:'crimson-thorn-baby-tee-vaultline-by-gizzy-graves',price:37,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/54978fa7-1209-4d1c-9283-ff4f848068a1.webp'},
-{name:'Northern Fracture Hoodie',slug:'vaultline-northern-fracture-hoodie',price:62,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp'},
-{name:'Northern Thorn Cami',slug:'northern-thorn-cami-vaultline',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/6099ed73-bac7-49c4-ac3d-514c6c67aca0.png'},
-{name:'IXXI Vaultline Tee',slug:'ixxi-vaultline-tee',price:38,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png'},
-{name:'Half Butterfly Fracture Baby Tee',slug:'half-butterfly-fracture-baby-tee',price:38,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/bbf26803-a430-4b71-af64-5167312caf82.webp'},
-{name:'Vaultline Gift Card',slug:'vaultline-gift-card',price:25,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/c2f2de89-d029-47a8-8446-ab2cabd39270.png'}
+{name:'In Ruin We Trust Slides',slug:'in-ruin-we-trust-slides',price:36,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/699ce60f-5fb4-4dcb-855a-74d3f865b6ee.png',accent:'steel',copy:'Built for the aftermath. Dark, understated, and unmistakably Vaultline.',colors:['#0e0c0f','#f1f1ef']},variants:'BLACK / WHITE'},
+{name:'White Sigil Rib Tank',slug:'white-sigil-rib-tank',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/26b306d0-ab15-4974-9a9e-8729093d77d6.webp',accent:'pearl',copy:'Minimal from the front. Quietly marked from behind.',colors:['#0c0c0c','#243048','#aeb0b2'],variants:'BLACK / NAVY / HEATHER'},
+{name:'Crimson Thorn Baby Tee',slug:'crimson-thorn-baby-tee-vaultline-by-gizzy-graves',price:37,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/54978fa7-1209-4d1c-9283-ff4f848068a1.webp',accent:'crimson',copy:'The front stays restrained. The back carries the damage.',colors:['#19171b','#3c2926','#e6e7e9'],variants:'BLACK / BROWN / WHITE'},
+{name:'Northern Fracture Hoodie',slug:'vaultline-northern-fracture-hoodie',price:62,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp',accent:'vault',copy:'Heavy structure. Northern Star. Controlled fracture.',colors:['#0f0f0f','#30478a','#aeb0b2'],variants:'BLACK / COBALT / HEATHER'},
+{name:'Northern Thorn Cami',slug:'northern-thorn-cami-vaultline',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/6099ed73-bac7-49c4-ac3d-514c6c67aca0.png',accent:'crimson',copy:'A softer silhouette without losing the edge.',colors:['#0c0c0c'],variants:'BLACK'},
+{name:'IXXI Vaultline Tee',slug:'ixxi-vaultline-tee',price:38,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png',accent:'pearl',copy:'IXXI at the front. Vaultline fracture language at the back.',colors:['#424242'],variants:'FADED BLACK'},
+{name:'Half Butterfly Fracture Baby Tee',slug:'half-butterfly-fracture-baby-tee',price:38,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/bbf26803-a430-4b71-af64-5167312caf82.webp',accent:'crimson',copy:'Transformation without erasure. Split through the fracture.',colors:['#19171b'],variants:'BLACK'},
+{name:'Vaultline Gift Card',slug:'vaultline-gift-card',price:25,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/c2f2de89-d029-47a8-8446-ab2cabd39270.png',accent:'steel',copy:'Give them access to the Vault. Let them choose the piece.',colors:['#11151c'],variants:'$25 / $50 / $100 / $150 / $200'}
 ];
-const grid=document.querySelector('#product-grid');
-const status=document.querySelector('#catalog-status');
-const nav=document.querySelector('#site-nav');
-const toggle=document.querySelector('.nav-toggle');
-const drawer=document.querySelector('#cart-drawer');
-const scrim=document.querySelector('#scrim');
-const cartButton=document.querySelector('#cart-button');
-const cartClose=document.querySelector('#cart-close');
-const checkoutButton=document.querySelector('#checkout-button');
-const cartItems=document.querySelector('#cart-items');
-
-function money(value,currency='USD'){return new Intl.NumberFormat('en-US',{style:'currency',currency}).format(Number(value)||0)}
-function normalizeProducts(payload){
-  const list=Array.isArray(payload)?payload:(payload.products||payload.data||payload.items||[]);
-  return list.map(p=>({
-    name:p.name||p.title||'Vaultline piece',
-    slug:p.slug||p.handle||p.id,
-    price:p.price?.amount||p.price||p.variants?.[0]?.price?.amount||p.variants?.[0]?.price||0,
-    currency:p.price?.currency||p.currency||p.variants?.[0]?.currency||'USD',
-    image:p.primaryImageUrl||p.image?.url||p.images?.[0]?.url||p.images?.[0]||'',
-    url:p.url||null
-  })).filter(p=>p.name);
-}
-function renderProducts(products,live=false){
-  grid.innerHTML=products.map(p=>`<article class="product-card" data-slug="${p.slug}">
-    <a href="${p.url||`${STORE_URL}/products/${p.slug}`}" aria-label="View ${p.name}">
-      <div class="product-image">${p.image?`<img src="${p.image}" alt="${p.name}" loading="lazy">`:''}</div>
-      <div class="product-meta"><div class="product-name">${p.name}</div><div class="product-price">From ${money(p.price,p.currency||'USD')}</div></div>
-    </a>
-  </article>`).join('');
-  status.textContent=live?'Live catalog connected through Fourthwall.':'Showing current Vaultline products. Headless API connection is ready for its token.';
-}
-async function loadCatalog(){
-  status.textContent='Loading live Fourthwall catalog…';
-  try{
-    const res=await fetch('/api/storefront/products',{headers:{Accept:'application/json'}});
-    if(!res.ok) throw new Error(`API ${res.status}`);
-    const data=await res.json();
-    const products=normalizeProducts(data);
-    if(!products.length) throw new Error('No products returned');
-    renderProducts(products,true);
-  }catch(err){renderProducts(fallbackProducts,false)}
-}
-function openCart(){drawer.classList.add('open');scrim.classList.add('open');drawer.setAttribute('aria-hidden','false');cartItems.innerHTML='<p class="cart-empty">The cart UI is staged. Once the Fourthwall Storefront token is added in Cloudflare, cart creation and checkout redirect can be enabled without exposing the token.</p>'}
-function closeCart(){drawer.classList.remove('open');scrim.classList.remove('open');drawer.setAttribute('aria-hidden','true')}
-toggle.addEventListener('click',()=>{const isOpen=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(isOpen))});
-cartButton.addEventListener('click',openCart);cartClose.addEventListener('click',closeCart);scrim.addEventListener('click',closeCart);
-document.querySelector('#refresh-products').addEventListener('click',loadCatalog);
-checkoutButton.addEventListener('click',()=>window.location.assign(STORE_URL));
-loadCatalog();
+const grid=document.querySelector('#product-grid'),status=document.querySelector('#catalog-status'),nav=document.querySelector('#site-nav'),toggle=document.querySelector('.nav-toggle'),drawer=document.querySelector('#cart-drawer'),scrim=document.querySelector('#scrim'),cartButton=document.querySelector('#cart-button'),cartClose=document.querySelector('#cart-close'),checkoutButton=document.querySelector('#checkout-button'),cartItems=document.querySelector('#cart-items');
+function money(v,c='USD'){return new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(Number(v)||0)}
+function normalizeProducts(payload){const list=Array.isArray(payload)?payload:(payload.products||payload.data||payload.items||[]);return list.map((p,i)=>({name:p.name||p.title||'Vaultline piece',slug:p.slug||p.handle||p.id,price:p.price?.amount||p.price||p.variants?.[0]?.price?.amount||p.variants?.[0]?.price||0,currency:p.price?.currency||p.currency||p.variants?.[0]?.currency||'USD',image:p.primaryImageUrl||p.image?.url||p.images?.[0]?.url||p.images?.[0]||'',url:p.url||null,copy:'A piece pulled from the current Vaultline catalog.',accent:i%3===0?'crimson':i%3===1?'pearl':'steel',colors:['#151515'],variants:'CURRENT COLORWAYS'})).filter(p=>p.name)}
+function renderProducts(products,live=false){grid.innerHTML=products.map((p,i)=>`<article class="product-card accent-${p.accent||'steel'}"><div class="dossier-head"><div class="dossier-title"><span class="dossier-number">${String(i+1).padStart(2,'0')}.</span><h3>${p.name}</h3></div><p>${p.copy||''}</p></div><a class="product-visual" href="${p.url||`${STORE_URL}/products/${p.slug}`}" aria-label="View ${p.name}"><img src="${p.image}" alt="${p.name}" loading="lazy"><span class="view-stamp">VIEW PIECE</span></a><div class="colorway-label">COLORWAYS</div><div class="colorway-row"><div class="swatches">${(p.colors||['#151515']).map(c=>`<span style="--swatch:${c}"></span>`).join('')}</div><div class="variant-copy">${p.variants||'CURRENT VARIANTS'}</div></div><div class="dossier-foot"><span>FROM ${money(p.price,p.currency||'USD')}</span><a href="${p.url||`${STORE_URL}/products/${p.slug}`}">OPEN DOSSIER →</a></div></article>`).join('');status.textContent=live?'LIVE FOURTHWALL CATALOG / CURRENT VAULT INVENTORY':'CURRENT VAULTLINE INVENTORY / FOURTHWALL CONNECTION STAGED'}
+async function loadCatalog(){status.textContent='ACCESSING CURRENT VAULT INVENTORY…';try{const res=await fetch('/api/storefront/products',{headers:{Accept:'application/json'}});if(!res.ok)throw new Error();const products=normalizeProducts(await res.json());if(!products.length)throw new Error();renderProducts(products,true)}catch(e){renderProducts(fallbackProducts,false)}}
+function openCart(){drawer.classList.add('open');scrim.classList.add('open');drawer.setAttribute('aria-hidden','false');cartItems.innerHTML='<p class="cart-empty">Cart handoff is staged for the Fourthwall Storefront connection.</p>'}function closeCart(){drawer.classList.remove('open');scrim.classList.remove('open');drawer.setAttribute('aria-hidden','true')}
+toggle.addEventListener('click',()=>{const o=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(o))});cartButton.addEventListener('click',openCart);cartClose.addEventListener('click',closeCart);scrim.addEventListener('click',closeCart);document.querySelector('#refresh-products').addEventListener('click',loadCatalog);checkoutButton.addEventListener('click',()=>window.location.assign(STORE_URL));loadCatalog();

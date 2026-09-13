@@ -32,7 +32,6 @@ export default {
     if(!create&&!action&&method!=='GET')return json({error:'Method not allowed'},405);
 
     const upstream=new URL(target);
-    upstream.searchParams.set('storefront_token',token);
     if(method==='GET')upstream.searchParams.set('currency','USD');
 
     const init={
@@ -42,25 +41,32 @@ export default {
         Authorization:`Bearer ${token}`
       }
     };
+
     if(method==='POST'){
       init.headers['Content-Type']='application/json';
       init.body=await request.text()||'{}';
     }
 
     try{
-      const response=await fetch(upstream,init);
+      const response=await fetch(upstream.toString(),init);
       const text=await response.text();
       if(!response.ok){
         let message=`Fourthwall cart request failed (${response.status}).`;
         try{
           const parsed=JSON.parse(text);
-          message=parsed?.message||parsed?.error||message;
+          message=parsed?.message||parsed?.error?.message||parsed?.error||message;
         }catch{}
-        return json({error:message,status:response.status},response.status);
+        return json({error:String(message),status:response.status},response.status);
       }
-      return new Response(text,{status:response.status,headers:{'content-type':response.headers.get('content-type')||'application/json; charset=utf-8','cache-control':'no-store'}});
-    }catch{
-      return json({error:'Fourthwall Storefront API request failed.'},502);
+      return new Response(text,{
+        status:response.status,
+        headers:{
+          'content-type':response.headers.get('content-type')||'application/json; charset=utf-8',
+          'cache-control':'no-store'
+        }
+      });
+    }catch(error){
+      return json({error:`Fourthwall Storefront API request failed: ${error?.message||'unknown network error'}`},502);
     }
   }
 };

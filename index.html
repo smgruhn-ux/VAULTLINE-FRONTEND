@@ -20,7 +20,7 @@
     <a class="brand" href="#top" aria-label="Vaultline home"><span>VAULTLINE</span></a>
     <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">MENU</button>
     <nav id="site-nav" class="site-nav">
-      <a href="#shop">SHOP</a>
+      <a href="#shop" data-shop-all>SHOP</a>
       <a href="#collections">COLLECTIONS</a>
       <a href="#lookbook">LOOKBOOK</a>
       <a href="#about">ABOUT</a>
@@ -35,7 +35,7 @@
         <h1>VAULTLINE</h1>
         <p class="hero-tagline">WEAR WHAT REMAINS.</p>
         <p class="hero-lede">More than clothing. A continuation.</p>
-        <div class="hero-actions"><a class="btn btn-primary" href="#shop">ENTER THE COLLECTION</a></div>
+        <div class="hero-actions"><a class="btn btn-primary" href="#shop" data-shop-all>ENTER THE COLLECTION</a></div>
       </div>
       <div class="hero-mark" aria-hidden="true">
         <div class="vault-ring"></div><div class="fracture"></div><span>VL</span>
@@ -45,18 +45,20 @@
 
     <section class="collections" id="collections">
       <div class="section-kicker">COLLECTIONS</div>
-      <div class="collections-head"><h2>Different patterns.<br>Same truth.</h2><span>01 — 04</span></div>
+      <div class="collections-head"><h2>Vaultline collections.</h2><span>01 — 06</span></div>
       <div class="collection-grid">
-        <a href="#shop" class="collection-tile"><span class="collection-no">01</span><strong>FRACTURE</strong><p>Broken things still hold.</p><div class="collection-art fracture-art"></div></a>
-        <a href="#shop" class="collection-tile"><span class="collection-no">02</span><strong>NORTHERN</strong><p>Still here. Still fighting.</p><div class="collection-art northern-art"></div></a>
-        <a href="#shop" class="collection-tile"><span class="collection-no">03</span><strong>IXXI</strong><p>Structure beneath the damage.</p><div class="collection-art ixxi-art"></div></a>
-        <a href="#shop" class="collection-tile"><span class="collection-no">04</span><strong>THORN</strong><p>Soft form. Sharp memory.</p><div class="collection-art thorn-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="deadstep-2"><span class="collection-no">01</span><strong>DEADSTEP</strong><p>4 PIECES</p><div class="collection-art fracture-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="submerged"><span class="collection-no">02</span><strong>CURRENT BETWEEN</strong><p>3 PIECES</p><div class="collection-art northern-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="mens"><span class="collection-no">03</span><strong>OMEGA</strong><p>20 PIECES</p><div class="collection-art ixxi-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="womens"><span class="collection-no">04</span><strong>ALPHA</strong><p>27 PIECES</p><div class="collection-art thorn-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="grave-offerings"><span class="collection-no">05</span><strong>GRAVE OFFERINGS</strong><p>7 PIECES</p><div class="collection-art fracture-art"></div></a>
+        <a href="#shop" class="collection-tile" data-collection="fractured-liberty"><span class="collection-no">06</span><strong>FRACTURED LIBERTY</strong><p>9 PIECES</p><div class="collection-art northern-art"></div></a>
       </div>
     </section>
 
     <section class="shop-section" id="shop">
       <div class="section-heading">
-        <div><p class="eyebrow">SHOP / CURRENT INVENTORY</p><h2>Current pieces</h2></div>
+        <div><p class="eyebrow" id="shop-kicker">SHOP / CURRENT INVENTORY</p><h2 id="shop-title">Current pieces</h2></div>
         <button class="text-link" id="refresh-products">REFRESH CATALOG</button>
       </div>
       <div class="index-rule"><span>PIECE</span><span>COLORWAYS</span><span>PRICE / ACCESS</span></div>
@@ -79,7 +81,7 @@
     </section>
 
     <section class="manifesto" id="about">
-      <div class="manifesto-copy"><p class="eyebrow">ABOUT</p><h2>MORE THAN CLOTHING.<br>A CONTINUATION.</h2><p>Vaultline exists at the intersection of what’s lost and what remains. Each piece carries fragments of the larger GRVEZ VAULT visual language without becoming generic artist merch.</p><a class="btn btn-ghost" href="#shop">SHOP VAULTLINE</a></div>
+      <div class="manifesto-copy"><p class="eyebrow">ABOUT</p><h2>MORE THAN CLOTHING.<br>A CONTINUATION.</h2><p>Vaultline exists at the intersection of what’s lost and what remains. Each piece carries fragments of the larger GRVEZ VAULT visual language without becoming generic artist merch.</p><a class="btn btn-ghost" href="#shop" data-shop-all>SHOP VAULTLINE</a></div>
       <div class="about-mark"><div class="about-star">✦</div><div>ART<br>MUSIC<br>TRUTH<br>APPAREL<br>THE VAULT</div></div>
     </section>
   </main>
@@ -104,7 +106,7 @@
   </aside>
   <div class="scrim" id="scrim"></div>
 
-  <footer><div class="footer-brand">VAULTLINE</div><div class="footer-copy">GRVEZ VAULT DIVISION / EST. 2026</div><div class="footer-links"><a href="#shop">SHOP</a><a href="#about">ABOUT</a><a href="https://www.instagram.com/grvezvault" rel="noopener">INSTAGRAM</a></div></footer>
+  <footer><div class="footer-brand">VAULTLINE</div><div class="footer-copy">GRVEZ VAULT DIVISION / EST. 2026</div><div class="footer-links"><a href="#shop" data-shop-all>SHOP</a><a href="#about">ABOUT</a><a href="https://www.instagram.com/grvezvault" rel="noopener">INSTAGRAM</a></div></footer>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -1,9 +1,3 @@
-const mobileFixes=document.createElement('link');
-mobileFixes.rel='stylesheet';
-mobileFixes.href='/mobile-fixes.css';
-document.head.appendChild(mobileFixes);
-
-import('./app-live.js').then(()=>Promise.all([
-  import('./nav-fix.js'),
-  import('./color-variants.js')
-]));
+// Vaultline storefront entry point.
+// Loads the main application then enhancement modules.
+import('./app-live.js').then(()=>import('./color-variants.js'));

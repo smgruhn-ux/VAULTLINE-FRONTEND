@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#171c24"/>
+      <stop offset="0.52" stop-color="#0f1319"/>
+      <stop offset="1" stop-color="#07090b"/>
+    </linearGradient>
+    <radialGradient id="mist" cx="48%" cy="48%" r="54%">
+      <stop offset="0" stop-color="#404852" stop-opacity=".24"/>
+      <stop offset=".55" stop-color="#1e252d" stop-opacity=".09"/>
+      <stop offset="1" stop-color="#090b0d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="crack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b63a50" stop-opacity="0"/>
+      <stop offset=".35" stop-color="#b63a50" stop-opacity=".95"/>
+      <stop offset=".72" stop-color="#7f2639" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#b63a50" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="22"/></filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <ellipse cx="760" cy="410" rx="650" ry="330" fill="url(#mist)"/>
+  <g opacity=".17" filter="url(#blur)" fill="#aab2bb">
+    <ellipse cx="330" cy="240" rx="260" ry="70"/>
+    <ellipse cx="1180" cy="180" rx="330" ry="80"/>
+    <ellipse cx="960" cy="340" rx="380" ry="55"/>
+  </g>
+  <path d="M0 650 C250 610 380 645 570 625 C820 595 1070 625 1600 570 L1600 900 L0 900 Z" fill="#07090a"/>
+  <path d="M0 700 C280 675 520 690 770 664 C1040 638 1280 660 1600 620 L1600 900 L0 900 Z" fill="#050607" opacity=".9"/>
+  <g stroke="#1b2026" stroke-width="8" fill="none" opacity=".9">
+    <path d="M525 650 L525 250 Q525 185 590 185 L790 185 Q855 185 855 250 L855 650"/>
+    <path d="M550 650 L550 265 Q550 215 600 215 L780 215 Q830 215 830 265 L830 650"/>
+  </g>
+  <g stroke="#252b32" stroke-width="3" opacity=".55">
+    <path d="M112 665 C135 542 140 420 128 290 M128 420 L80 360 M130 388 L182 320 M127 332 L91 268"/>
+    <path d="M1410 630 C1398 535 1410 430 1435 325 M1424 430 L1370 370 M1428 396 L1490 342 M1430 360 L1398 300"/>
+  </g>
+  <rect x="685" y="110" width="2" height="650" fill="url(#crack)" transform="rotate(2 686 435)"/>
+  <path d="M690 315 l-22 38 13 35-28 52 19 29-13 48" stroke="#b63a50" stroke-width="2" fill="none" opacity=".7"/>
+  <g fill="#101419" opacity=".85">
+    <ellipse cx="250" cy="700" rx="320" ry="30"/>
+    <ellipse cx="1180" cy="720" rx="520" ry="40"/>
+  </g>
+</svg>

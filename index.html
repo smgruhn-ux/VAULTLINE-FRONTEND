@@ -3,59 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#07090b">
   <meta name="description" content="Vaultline by Gizzy Graves — dark apparel and objects from inside the GRVEZ VAULT.">
   <title>Vaultline by Gizzy Graves</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-
-  <!-- HEADER -->
   <header class="hdr">
-    <button class="hdr-menu" id="menu-toggle" aria-label="Menu" aria-expanded="false">
-      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><line x1="0" y1="1" x2="18" y2="1" stroke="currentColor" stroke-width="1.2"/><line x1="0" y1="6" x2="18" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="0" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="1.2"/></svg>
-    </button>
+    <button class="hdr-menu" id="menu-toggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <a class="hdr-brand" href="#top">VAULTLINE<span>BY GIZZY GRAVES</span></a>
     <nav class="hdr-nav" id="site-nav">
       <a href="#shop" data-shop-all>SHOP</a>
       <a href="#collections">COLLECTIONS</a>
       <a href="#lookbook">LOOKBOOK</a>
-      <a href="#about">ABOUT</a>
+      <a href="/story.html">OUR STORY</a>
     </nav>
-    <div class="hdr-right">
-      <button class="hdr-cart" id="cart-button" aria-label="Cart">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        <span class="cart-badge" id="cart-count">0</span>
-      </button>
-    </div>
+    <button class="hdr-cart" id="cart-button" aria-label="Cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </button>
   </header>
 
-  <!-- MOBILE NAV -->
   <div class="mob-nav" id="mob-nav">
     <a href="#top">HOME</a>
     <a href="#shop" data-shop-all>SHOP</a>
     <a href="#collections">COLLECTIONS</a>
     <a href="#lookbook">LOOKBOOK</a>
-    <a href="#about">ABOUT</a>
+    <a href="/story.html">OUR STORY</a>
   </div>
 
   <main id="top">
-
-    <!-- HERO -->
     <section class="hero">
-      <div class="hero-art">
-        <div class="hero-fracture"></div>
-      </div>
-      <div class="hero-overlay">
-        <div class="hero-verse">IN RUIN<br>WE TRUST<br>IN UNITY<br>WE RISE</div>
-        <div class="hero-center">
-          <h1>MORE<br>THAN<br>CLOTHING</h1>
-          <p class="hero-sub">A CONTINUATION</p>
-          <a class="btn-ghost" href="#collections">EXPLORE VAULTLINE &rarr;</a>
-        </div>
+      <div class="hero-art" aria-hidden="true"></div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-verse">IN RUIN<br>WE TRUST<br>IN UNITY<br>WE RISE</div>
+      <div class="hero-center">
+        <p class="hero-label">VAULTLINE / 2026</p>
+        <h1>MORE<br>THAN<br>CLOTHING</h1>
+        <p class="hero-sub">A CONTINUATION</p>
+        <a class="btn-ghost" href="#collections">EXPLORE VAULTLINE <span>→</span></a>
       </div>
       <div class="hero-bottom">
         <div class="hero-motto">THE WOUND<br>THE WORK<br>THE CONTINUATION</div>
@@ -63,20 +52,18 @@
       </div>
     </section>
 
-    <!-- COLLECTIONS -->
     <section class="collections" id="collections">
-      <div class="sec-head"><span>COLLECTIONS</span></div>
+      <div class="sec-head"><span>01 / COLLECTIONS</span><p>ENTER BY COLLECTION</p></div>
       <div class="col-grid" id="collection-grid">
-        <a href="#shop" class="col-card" data-collection="deadstep-2"><div class="col-card-inner"><span class="col-num">01</span><strong>DEADSTEP</strong><p>4 PIECES</p></div></a>
-        <a href="#shop" class="col-card" data-collection="submerged"><div class="col-card-inner"><span class="col-num">02</span><strong>CURRENT BETWEEN</strong><p>3 PIECES</p></div></a>
-        <a href="#shop" class="col-card" data-collection="mens"><div class="col-card-inner"><span class="col-num">03</span><strong>OMEGA</strong><p>20 PIECES</p></div></a>
-        <a href="#shop" class="col-card" data-collection="womens"><div class="col-card-inner"><span class="col-num">04</span><strong>ALPHA</strong><p>27 PIECES</p></div></a>
-        <a href="#shop" class="col-card" data-collection="grave-offerings"><div class="col-card-inner"><span class="col-num">05</span><strong>GRAVE OFFERINGS</strong><p>7 PIECES</p></div></a>
-        <a href="#shop" class="col-card" data-collection="fractured-liberty"><div class="col-card-inner"><span class="col-num">06</span><strong>FRACTURED LIBERTY</strong><p>9 PIECES</p></div></a>
+        <a href="#shop" class="col-card col-deadstep" data-collection="deadstep-2"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">01</span><strong>DEADSTEP</strong><p>4 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-current" data-collection="submerged"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">02</span><strong>CURRENT BETWEEN</strong><p>3 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-omega" data-collection="mens"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">03</span><strong>OMEGA</strong><p>20 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-alpha" data-collection="womens"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">04</span><strong>ALPHA</strong><p>27 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-grave" data-collection="grave-offerings"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">05</span><strong>GRAVE OFFERINGS</strong><p>7 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-liberty" data-collection="fractured-liberty"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">06</span><strong>FRACTURED LIBERTY</strong><p>9 PIECES</p><span class="col-arrow">ENTER →</span></div></a>
       </div>
     </section>
 
-    <!-- SHOP -->
     <section class="shop" id="shop">
       <div class="shop-banner" id="shop-banner">
         <div class="shop-banner-fracture"></div>
@@ -84,24 +71,22 @@
         <h2 id="shop-title">CURRENT PIECES</h2>
       </div>
       <div class="shop-bar">
-        <span class="shop-sort">SORT: FEATURED</span>
+        <span class="shop-sort">SORT / FEATURED</span>
         <span class="shop-status" id="catalog-status"></span>
         <button class="btn-text" id="refresh-products">REFRESH</button>
       </div>
       <div class="product-grid" id="product-grid"></div>
     </section>
 
-    <!-- LOOKBOOK -->
     <section class="lookbook" id="lookbook">
       <div class="lookbook-photo">
-        <button class="lookbook-main" data-feature-slug="vaultline-northern-fracture-hoodie" aria-label="Inspect Northern Fracture Hoodie">
-          <img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp" alt="Northern Fracture Hoodie" loading="lazy">
-        </button>
+        <button class="lookbook-main" data-feature-slug="vaultline-northern-fracture-hoodie" aria-label="Inspect Northern Fracture Hoodie"><img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp" alt="Northern Fracture Hoodie" loading="lazy"></button>
       </div>
       <div class="lookbook-text">
+        <p class="eyebrow">02 / EDITORIAL</p>
         <h2>WEAR<br>WHAT<br>REMAINS</h2>
-        <p>Pieces for the in between.<br>Built from what's left.<br>Made to last.</p>
-        <a class="btn-ghost" href="#shop" data-shop-all>VIEW LOOKBOOK &rarr;</a>
+        <p>Pieces for the in between.<br>Built from what is left.<br>Made to last.</p>
+        <a class="btn-ghost" href="#shop" data-shop-all>VIEW PIECES <span>→</span></a>
       </div>
       <div class="lookbook-strip">
         <button data-feature-slug="ixxi-vaultline-tee"><img src="https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png" alt="IXXI Vaultline Tee" loading="lazy"></button>
@@ -111,45 +96,30 @@
       </div>
     </section>
 
-    <!-- BRAND / ABOUT -->
     <section class="brand" id="about">
       <div class="brand-inner">
         <div class="brand-copy">
+          <p class="eyebrow">03 / THE BRAND</p>
           <div class="brand-mark">VAULTLINE<span>BY GIZZY GRAVES</span></div>
           <p>A collection born from the between, where pain, art, and purpose still coexist.</p>
-          <a class="btn-ghost" href="#collections">OUR STORY &rarr;</a>
+          <a class="btn-ghost" href="/story.html">OUR STORY <span>→</span></a>
         </div>
         <div class="brand-symbol" aria-hidden="true">
-          <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="1">
-            <circle cx="100" cy="100" r="70"/>
-            <line x1="100" y1="30" x2="100" y2="170"/>
-            <line x1="30" y1="100" x2="170" y2="100"/>
-            <line x1="50.5" y1="50.5" x2="149.5" y2="149.5"/>
-            <line x1="149.5" y1="50.5" x2="50.5" y2="149.5"/>
-            <circle cx="100" cy="100" r="12"/>
-          </svg>
+          <svg viewBox="0 0 220 220" fill="none" stroke="currentColor" stroke-width="1"><circle cx="110" cy="110" r="74"/><line x1="110" y1="24" x2="110" y2="196"/><line x1="24" y1="110" x2="196" y2="110"/><line x1="49" y1="49" x2="171" y2="171"/><line x1="171" y1="49" x2="49" y2="171"/><circle cx="110" cy="110" r="11"/></svg>
         </div>
       </div>
-      <div class="brand-values">
-        <div class="bv">QUALITY<br>OVER QUANTITY</div>
-        <div class="bv">ORIGINAL<br>DESIGNS</div>
-        <div class="bv">BUILT WITH<br>PURPOSE</div>
-        <div class="bv">A CONTINUATION<br>NOT A TREND</div>
-      </div>
+      <div class="brand-values"><div class="bv">QUALITY<br>OVER QUANTITY</div><div class="bv">ORIGINAL<br>DESIGNS</div><div class="bv">BUILT WITH<br>PURPOSE</div><div class="bv">A CONTINUATION<br>NOT A TREND</div></div>
     </section>
 
-    <!-- STORE SUPPORT -->
     <section class="support">
-      <article><strong>SHOPPING</strong><p>Products, collections, and the cart stay inside Vaultline.</p><a href="#shop" data-shop-all>SHOP ALL</a></article>
+      <article><strong>SHOPPING</strong><p>Products, collections, and cart stay inside Vaultline.</p><a href="#shop" data-shop-all>SHOP ALL</a></article>
       <article><strong>CHECKOUT</strong><p>Secure handoff to Fourthwall for payment and fulfillment.</p><a href="/faq.html">FAQ</a></article>
       <article><strong>POLICIES</strong><p>Shipping, returns, privacy, and terms before purchase.</p><a href="/terms.html">TERMS</a></article>
     </section>
-
   </main>
 
-  <!-- PRODUCT DETAIL -->
   <aside class="pd" id="quick-view" aria-hidden="true">
-    <button class="pd-close" id="quick-close" aria-label="Close">&times;</button>
+    <button class="pd-close" id="quick-close" aria-label="Close">×</button>
     <div class="pd-thumbs" id="quick-thumbs"></div>
     <div class="pd-image"><img class="pd-img" id="quick-image" alt=""></div>
     <div class="pd-info">
@@ -161,40 +131,15 @@
       <div class="pd-field"><span class="pd-label">COLOR: <strong id="quick-color-label"></strong></span><div class="pd-swatches" id="quick-swatches"></div></div>
       <div class="pd-field"><span class="pd-label">SIZE:</span><div class="pd-sizes" id="quick-variants"></div></div>
       <button class="pd-atc" id="quick-buy">ADD TO CART</button>
-      <div class="pd-accordion">
-        <details><summary>DETAILS</summary><p id="pd-details-text">Premium quality apparel from the Vaultline collection.</p></details>
-        <details><summary>SIZE GUIDE</summary><p>Refer to Fourthwall size charts. True to size for most pieces.</p></details>
-        <details><summary>SHIPPING &amp; RETURNS</summary><p>Handled securely by Fourthwall. See checkout for shipping options.</p></details>
-      </div>
+      <div class="pd-accordion"><details><summary>DETAILS</summary><p id="pd-details-text">Premium quality apparel from the Vaultline collection.</p></details><details><summary>SIZE GUIDE</summary><p>Refer to Fourthwall size charts. True to size for most pieces.</p></details><details><summary>SHIPPING &amp; RETURNS</summary><p>Handled securely by Fourthwall. See checkout for shipping options.</p></details></div>
       <p class="pd-note">Checkout and fulfillment by Fourthwall.</p>
     </div>
   </aside>
 
-  <!-- CART DRAWER -->
-  <aside class="cart-drawer" id="cart-drawer" aria-hidden="true">
-    <div class="cart-head"><h2>YOUR CART</h2><button id="cart-close" aria-label="Close">&times;</button></div>
-    <div class="cart-items" id="cart-items"></div>
-    <div class="cart-foot">
-      <div class="cart-total-row"><span>TOTAL</span><strong id="cart-total">$0.00</strong></div>
-      <button class="pd-atc" id="checkout-button" disabled>CHECKOUT</button>
-      <p class="cart-note">Secure checkout via Fourthwall.</p>
-    </div>
-  </aside>
-
+  <aside class="cart-drawer" id="cart-drawer" aria-hidden="true"><div class="cart-head"><h2>YOUR CART</h2><button id="cart-close" aria-label="Close">×</button></div><div class="cart-items" id="cart-items"></div><div class="cart-foot"><div class="cart-total-row"><span>TOTAL</span><strong id="cart-total">$0.00</strong></div><button class="pd-atc" id="checkout-button" disabled>CHECKOUT</button><p class="cart-note">Secure checkout via Fourthwall.</p></div></aside>
   <div class="scrim" id="scrim"></div>
 
-  <!-- FOOTER -->
-  <footer class="ft">
-    <div class="ft-brand">VAULTLINE</div>
-    <div class="ft-sub">GRVEZ VAULT DIVISION / EST. 2026</div>
-    <div class="ft-links">
-      <a href="#top">HOME</a><a href="#shop" data-shop-all>SHOP</a><a href="#about">ABOUT</a>
-      <a href="https://www.instagram.com/grvezvault" rel="noopener" target="_blank">INSTAGRAM</a>
-    </div>
-    <div class="ft-legal">
-      <a href="/terms.html">TERMS</a><a href="/privacy.html">PRIVACY</a><a href="/faq.html">FAQ</a>
-    </div>
-  </footer>
+  <footer class="ft"><div><div class="ft-brand">VAULTLINE</div><div class="ft-sub">GRVEZ VAULT DIVISION / EST. 2026</div></div><div class="ft-links"><a href="#top">HOME</a><a href="#shop" data-shop-all>SHOP</a><a href="/story.html">OUR STORY</a><a href="https://www.instagram.com/grvezvault" rel="noopener" target="_blank">INSTAGRAM</a></div><div class="ft-legal"><a href="/terms.html">TERMS</a><a href="/privacy.html">PRIVACY</a><a href="/faq.html">FAQ</a></div></footer>
 
   <script type="module" src="/app.js"></script>
 </body>

@@ -1,6 +1,12 @@
-// Checkout must remain on Fourthwall when the custom frontend owns the main domain.
+// ═══════════════════════════════════════════════════════════════
+// Vaultline Storefront — app-live.js
+// Fourthwall-backed catalog, cart, and checkout logic.
+// ═══════════════════════════════════════════════════════════════
+
 const STORE_URL='https://vaultlineofficial-shop.fourthwall.com';
 const CART_KEY='vaultline_fourthwall_cart_id';
+
+// ── Collection definitions (Fourthwall product IDs) ────────────
 const COLLECTIONS={
 'deadstep-2':{name:'DEADSTEP',ids:['a6d1a51d-dbc2-443e-ae40-b63aa063d162','36540eef-7b3b-4c11-8a74-2ecfe4a8112c','b898acba-6d88-497a-92ef-1ada640529f9','1090eea7-35ee-4479-a97b-2d1f519f5877']},
 'submerged':{name:'CURRENT BETWEEN',ids:['47669ad4-64aa-48c4-98d5-faddb6ac19ca','9b247c1b-98a5-4e22-ac7a-67d5a32ac0b2','0f64031d-8c45-44ae-bed2-afa7ff3e1ea7']},
@@ -9,42 +15,318 @@ const COLLECTIONS={
 'grave-offerings':{name:'GRAVE OFFERINGS',ids:['b70bb415-145c-4c32-b483-6f7298930b76','b0816d1c-587b-4da2-953e-5edd5bdc8d82','47f692c3-9bb8-4219-be7b-6c59b807e212','b5f2171f-4bf6-4414-b00e-3f03d0d01495','b286f875-d3af-404b-8566-8e3aff5babf4','7cb1b3f5-a425-450d-a099-7fc93b4765e9','92cfd594-773c-4dd0-adfb-b26ba7be7eca']},
 'fractured-liberty':{name:'FRACTURED LIBERTY',ids:['dd98fc71-cdda-48ee-8572-f5fea512fec6','ff4d1949-80d7-4b88-b4c1-5e98815d31af','5a697916-951b-4a27-a501-9ca08392b76b','77b91fc0-9d02-4576-a3cb-97f07cb57b91','69627d6e-8f4d-4aef-a8e7-c2f00a676c01','33067f9e-db5c-402f-a9d1-b8078c0942e5','61ee0527-9900-4185-b526-fa285a7220cf','3661021b-f112-4724-b001-3b489626be26','439519f5-05d1-4ae6-9ff6-f7fe585cf714']}
 };
+
+// ── Fallback catalog (used when Fourthwall API is unreachable) ─
 const fallbackProducts=[
-{name:'In Ruin We Trust Slides',slug:'in-ruin-we-trust-slides',price:36,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/699ce60f-5fb4-4dcb-855a-74d3f865b6ee.png',accent:'steel',copy:'Built for the aftermath. Dark, understated, and unmistakably Vaultline.',colors:['#0e0c0f','#f1f1ef'],variants:[]},
-{name:'White Sigil Rib Tank',slug:'white-sigil-rib-tank',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/26b306d0-ab15-4974-9a9e-8729093d77d6.webp',accent:'pearl',copy:'Minimal from the front. Quietly marked from behind.',colors:['#0c0c0c','#243048','#aeb0b2'],variants:[]},
-{name:'Crimson Thorn Baby Tee',slug:'crimson-thorn-baby-tee-vaultline-by-gizzy-graves',price:37,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/54978fa7-1209-4d1c-9283-ff4f848068a1.webp',accent:'crimson',copy:'The front stays restrained. The back carries the damage.',colors:['#19171b','#3c2926','#e6e7e9'],variants:[]},
-{name:'Northern Fracture Hoodie',slug:'vaultline-northern-fracture-hoodie',price:62,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp',accent:'vault',copy:'Heavy structure. Northern Star. Controlled fracture.',colors:['#0f0f0f','#30478a','#aeb0b2'],variants:[]},
-{name:'Northern Thorn Cami',slug:'northern-thorn-cami-vaultline',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/6099ed73-bac7-49c4-ac3d-514c6c67aca0.png',accent:'crimson',copy:'A softer silhouette without losing the edge.',colors:['#0c0c0c'],variants:[]},
-{name:'IXXI Vaultline Tee',slug:'ixxi-vaultline-tee',price:38,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png',accent:'pearl',copy:'IXXI at the front. Vaultline fracture language at the back.',colors:['#424242'],variants:[]},
-{name:'Half Butterfly Fracture Baby Tee',slug:'half-butterfly-fracture-baby-tee',price:38,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/bbf26803-a430-4b71-af64-5167312caf82.webp',accent:'crimson',copy:'Transformation without erasure. Split through the fracture.',colors:['#19171b'],variants:[]},
-{name:'Vaultline Gift Card',slug:'vaultline-gift-card',price:25,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/c2f2de89-d029-47a8-8446-ab2cabd39270.png',accent:'steel',copy:'Give them access to the Vault. Let them choose the piece.',colors:['#11151c'],variants:[]}
+{name:'In Ruin We Trust Slides',slug:'in-ruin-we-trust-slides',price:36,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/699ce60f-5fb4-4dcb-855a-74d3f865b6ee.png',copy:'Built for the aftermath.',colors:['#0e0c0f','#f1f1ef'],variants:[]},
+{name:'White Sigil Rib Tank',slug:'white-sigil-rib-tank',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/26b306d0-ab15-4974-9a9e-8729093d77d6.webp',copy:'Minimal from the front.',colors:['#0c0c0c','#243048','#aeb0b2'],variants:[]},
+{name:'Crimson Thorn Baby Tee',slug:'crimson-thorn-baby-tee-vaultline-by-gizzy-graves',price:37,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/54978fa7-1209-4d1c-9283-ff4f848068a1.webp',copy:'The front stays restrained.',colors:['#19171b','#3c2926','#e6e7e9'],variants:[]},
+{name:'Northern Fracture Hoodie',slug:'vaultline-northern-fracture-hoodie',price:62,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp',copy:'Heavy structure. Controlled fracture.',colors:['#0f0f0f','#30478a','#aeb0b2'],variants:[]},
+{name:'Northern Thorn Cami',slug:'northern-thorn-cami-vaultline',price:25,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/6099ed73-bac7-49c4-ac3d-514c6c67aca0.png',copy:'A softer silhouette.',colors:['#0c0c0c'],variants:[]},
+{name:'IXXI Vaultline Tee',slug:'ixxi-vaultline-tee',price:38,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png',copy:'IXXI at the front.',colors:['#424242'],variants:[]},
+{name:'Half Butterfly Fracture Baby Tee',slug:'half-butterfly-fracture-baby-tee',price:38,image:'https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/bbf26803-a430-4b71-af64-5167312caf82.webp',copy:'Transformation without erasure.',colors:['#19171b'],variants:[]},
+{name:'Vaultline Gift Card',slug:'vaultline-gift-card',price:25,image:'https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/c2f2de89-d029-47a8-8446-ab2cabd39270.png',copy:'Give them access to the Vault.',colors:['#11151c'],variants:[]}
 ];
-let allProducts=fallbackProducts,products=fallbackProducts,quickProduct=null,catalogLive=false;
-const $=s=>document.querySelector(s),grid=$('#product-grid'),status=$('#catalog-status'),nav=$('#site-nav'),toggle=$('.nav-toggle'),drawer=$('#cart-drawer'),scrim=$('#scrim'),cartButton=$('#cart-button'),cartClose=$('#cart-close'),checkout=$('#checkout-button'),cartItems=$('#cart-items'),cartCount=$('#cart-count'),cartTotal=$('#cart-total'),quick=$('#quick-view'),quickClose=$('#quick-close'),quickImage=$('#quick-image'),quickName=$('#quick-name'),quickDescription=$('#quick-description'),quickIndex=$('#quick-index'),quickSwatches=$('#quick-swatches'),quickVariants=$('#quick-variants'),quickPrice=$('#quick-price'),quickBuy=$('#quick-buy'),shopTitle=$('#shop-title'),shopKicker=$('#shop-kicker');
+
+// ── State ─────────────────────────────────────────────────────
+let allProducts=fallbackProducts, products=fallbackProducts, catalogLive=false;
+
+// ── DOM refs ──────────────────────────────────────────────────
+const $=s=>document.querySelector(s);
+const grid=$('#product-grid'),status=$('#catalog-status');
+const nav=$('#site-nav'),menuToggle=$('#menu-toggle'),mobNav=$('#mob-nav');
+const drawer=$('#cart-drawer'),scrim=$('#scrim');
+const cartButton=$('#cart-button'),cartClose=$('#cart-close'),checkout=$('#checkout-button');
+const cartItems=$('#cart-items'),cartCount=$('#cart-count'),cartTotal=$('#cart-total');
+const quick=$('#quick-view'),quickClose=$('#quick-close');
+const quickImage=$('#quick-image'),quickName=$('#quick-name'),quickDesc=$('#quick-description');
+const quickIndex=$('#quick-index'),quickSwatches=$('#quick-swatches'),quickVariants=$('#quick-variants');
+const quickPrice=$('#quick-price'),quickBuy=$('#quick-buy'),quickColorLabel=$('#quick-color-label');
+const shopTitle=$('#shop-title'),shopKicker=$('#shop-kicker');
+
+// ── Utilities ─────────────────────────────────────────────────
 const money=(v,c='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(Number(v)||0);
-const esc=(v='')=>String(v).replace(/[&<>'\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[ch]));
+const esc=(v='')=>String(v).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 const clean=(v='')=>String(v).replace(/<[^>]*>/g,'').trim();
-const available=v=>!(v?.stock?.type==='LIMITED'&&Number(v?.stock?.inStock||0)<=0);
-const label=v=>[v?.attributes?.color?.name,v?.attributes?.size?.name].filter(Boolean).join(' / ')||v?.name||'Default';
-function normalize(payload){const list=Array.isArray(payload)?payload:(payload.products||payload.data||payload.items||[]);return list.map((p,i)=>{const variants=Array.isArray(p.variants)?p.variants:[],priced=variants.find(available)||variants[0],colors=[...new Set(variants.map(v=>v?.attributes?.color?.swatch).filter(Boolean))];return{id:p.id||p.offerId||p.offer?.id||'',name:p.name||p.title||'Vaultline piece',slug:p.slug||p.handle||p.id,price:p.price?.amount||p.price||priced?.unitPrice?.value||0,currency:p.price?.currency||p.currency||priced?.unitPrice?.currency||'USD',image:p.primaryImageUrl||p.image?.url||p.images?.[0]?.transformedUrl||p.images?.[0]?.url||'',copy:clean(p.description)||'A piece pulled from the current Vaultline catalog.',accent:i%3===0?'crimson':i%3===1?'pearl':'steel',colors:colors.length?colors:['#151515'],variants}})}
-function render(list,live,statusText){products=list;grid.innerHTML=list.length?list.map((p,i)=>`<article class="product-card accent-${p.accent}"><div class="dossier-head"><div class="dossier-title"><span class="dossier-number">${String(i+1).padStart(2,'0')}.</span><h3>${esc(p.name)}</h3></div><p>${esc((p.copy||'').slice(0,180))}</p></div><button class="product-visual quick-trigger" data-index="${i}"><img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"><span class="view-stamp">INSPECT PIECE</span></button><div class="colorway-label">COLORWAYS</div><div class="colorway-row"><div class="swatches">${p.colors.slice(0,4).map(c=>`<span style="--swatch:${esc(c)}"></span>`).join('')}</div><div class="variant-copy">${p.variants.length?`${p.variants.length} VARIANTS`:'CURRENT COLORWAYS'}</div></div><div class="dossier-foot"><span>FROM ${money(p.price,p.currency)}</span><button class="dossier-open quick-trigger" data-index="${i}">OPEN DOSSIER →</button></div></article>`).join(''):'<div class="collection-empty">No currently listed products from this collection were returned by the live catalog.</div>';status.textContent=statusText||(live?'LIVE FOURTHWALL CATALOG / CURRENT VAULT INVENTORY':'CURRENT VAULTLINE INVENTORY / FOURTHWALL CONNECTION STAGED');document.querySelectorAll('.quick-trigger').forEach(b=>b.onclick=()=>openQuick(+b.dataset.index))}
-function showAllProducts(){shopKicker.textContent='SHOP / CURRENT INVENTORY';shopTitle.textContent='Current pieces';render(allProducts,catalogLive);}
-function showCollection(slug){const collection=COLLECTIONS[slug];if(!collection)return;const wanted=new Set(collection.ids);const filtered=allProducts.filter(p=>wanted.has(String(p.id)));shopKicker.textContent='COLLECTION';shopTitle.textContent=collection.name;render(filtered,catalogLive,`${collection.name} / ${filtered.length} CURRENT PIECE${filtered.length===1?'':'S'}`);requestAnimationFrame(()=>document.querySelector('#shop')?.scrollIntoView({behavior:'smooth',block:'start'}));}
-async function loadCatalog(){status.textContent='ACCESSING CURRENT VAULT INVENTORY…';try{const r=await fetch('/api/storefront/products');if(!r.ok)throw 0;const list=normalize(await r.json());if(!list.length)throw 0;allProducts=list;catalogLive=true;showAllProducts()}catch{allProducts=fallbackProducts;catalogLive=false;showAllProducts()}}
-function openQuick(i){const p=products[i];if(!p)return;quickProduct=p;quickImage.src=p.image;quickImage.alt=p.name;quickName.textContent=p.name;quickDescription.textContent=p.copy;quickIndex.textContent=`VAULTLINE / ${String(i+1).padStart(3,'0')}`;quickSwatches.innerHTML=p.colors.map(c=>`<span style="--swatch:${esc(c)}"></span>`).join('');quickPrice.textContent=`FROM ${money(p.price,p.currency)}`;if(p.variants.length){quickVariants.innerHTML=`<select id="variant-select" style="max-width:230px;background:#090b0f;color:#f0f0ed;border:1px solid rgba(214,220,228,.18);padding:9px 10px;font:inherit">${p.variants.map(v=>`<option value="${esc(v.id)}" ${available(v)?'':'disabled'}>${esc(label(v))}${available(v)?'':' — SOLD OUT'}</option>`).join('')}</select>`;quickBuy.textContent='ADD TO CART';quickBuy.href='#';quickBuy.dataset.mode='cart'}else{quickVariants.textContent='THIS ITEM IS NOT AVAILABLE THROUGH THE LIVE CART YET.';quickBuy.textContent='UNAVAILABLE';quickBuy.href='#';quickBuy.dataset.mode='unavailable'}quick.classList.add('open');scrim.classList.add('open');quick.setAttribute('aria-hidden','false');document.body.classList.add('locked')}
-function closeQuick(){quick.classList.remove('open');quick.setAttribute('aria-hidden','true');if(!drawer.classList.contains('open'))scrim.classList.remove('open');document.body.classList.remove('locked')}
-async function api(path,opt={}){const r=await fetch(path,{...opt,headers:{Accept:'application/json','Content-Type':'application/json',...(opt.headers||{})}}),body=await r.json().catch(()=>({}));if(!r.ok){const detail=body.error||body.message||body.detail||`Request failed (${r.status})`;throw new Error(`${r.status}: ${detail}`)}return body}
-async function ensureCart(){const id=localStorage.getItem(CART_KEY);if(id){try{return await api(`/api/cart/${encodeURIComponent(id)}`)}catch{localStorage.removeItem(CART_KEY)}}const cart=await api('/api/cart',{method:'POST',body:'{"items":[]}'});localStorage.setItem(CART_KEY,cart.id);return cart}
-function cartMath(cart){let count=0,total=0,currency='USD';for(const item of cart?.items||[]){const q=Number(item.quantity)||0,p=Number(item?.variant?.unitPrice?.value)||0;count+=q;total+=q*p;currency=item?.variant?.unitPrice?.currency||currency}return{count,total,currency}}
-function showCart(cart){const {count,total,currency}=cartMath(cart);cartCount.textContent=count;cartTotal.textContent=money(total,currency);checkout.disabled=!cart?.id||!count;const items=cart?.items||[];if(!items.length){cartItems.innerHTML='<p class="cart-empty">Your Vaultline cart is empty.</p>';return}cartItems.innerHTML=items.map(item=>{const v=item.variant||{},q=Number(item.quantity)||1,img=v.images?.[0]?.transformedUrl||v.images?.[0]?.url||'';return`<article style="display:grid;grid-template-columns:72px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(214,220,228,.18)">${img?`<img src="${esc(img)}" style="width:72px;height:86px;object-fit:contain;background:#0b0d11">`:''}<div><strong style="display:block;font-size:12px">${esc(v?.product?.name||v.name||'Vaultline piece')}</strong><span style="display:block;margin-top:5px;color:#a9b0ba;font-size:10px">${esc(label(v))}</span><div style="display:flex;gap:8px;align-items:center;margin-top:10px"><button data-a="dec" data-id="${esc(v.id)}" data-q="${q}">−</button><span>${q}</span><button data-a="inc" data-id="${esc(v.id)}" data-q="${q}">+</button><button data-a="remove" data-id="${esc(v.id)}" style="margin-left:auto;background:none;border:0;color:#a9b0ba;cursor:pointer">REMOVE</button></div></div></article>`}).join('');cartItems.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>changeItem(b))}
-async function refreshCart(){const id=localStorage.getItem(CART_KEY);if(!id)return showCart({items:[]});try{showCart(await api(`/api/cart/${encodeURIComponent(id)}`))}catch{localStorage.removeItem(CART_KEY);showCart({items:[]})}}
-async function changeItem(b){const id=localStorage.getItem(CART_KEY),variantId=b.dataset.id,q=+b.dataset.q||1,a=b.dataset.a;if(!id)return;const remove=a==='remove'||(a==='dec'&&q<=1),path=`/api/cart/${encodeURIComponent(id)}/${remove?'remove':'change'}`,items=remove?[{variantId}]:[{variantId,quantity:a==='inc'?q+1:q-1}];showCart(await api(path,{method:'POST',body:JSON.stringify({items})}))}
-async function addSelected(e){if(quickBuy.dataset.mode!=='cart')return;e.preventDefault();const variantId=$('#variant-select')?.value;if(!variantId)return;quickBuy.textContent='ADDING…';try{const cart=await ensureCart(),next=await api(`/api/cart/${encodeURIComponent(cart.id)}/add`,{method:'POST',body:JSON.stringify({items:[{variantId,quantity:1}]})});showCart(next);closeQuick();openCart()}catch(err){console.error('Vaultline cart error:',err);quickVariants.innerHTML=`<div style="max-width:520px;padding:10px 12px;border:1px solid rgba(182,58,80,.55);background:rgba(182,58,80,.08);color:#f0f0ed;font-size:11px;line-height:1.45">CART ERROR: ${esc(err?.message||'Unknown cart error')}</div>`;quickBuy.textContent='TRY ADD TO CART AGAIN';quickBuy.href='#';quickBuy.dataset.mode='cart'}finally{if(quickBuy.dataset.mode==='cart'&&quickBuy.textContent==='ADDING…')quickBuy.textContent='ADD TO CART'}}
-function openCart(){drawer.classList.add('open');scrim.classList.add('open');drawer.setAttribute('aria-hidden','false');document.body.classList.add('locked');refreshCart()}
-function closeCart(){drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');if(!quick.classList.contains('open'))scrim.classList.remove('open');document.body.classList.remove('locked')}
-function closeMenu(){nav.classList.remove('open');toggle.setAttribute('aria-expanded','false')}
-toggle.onclick=()=>{const o=nav.classList.toggle('open');toggle.setAttribute('aria-expanded',String(o))};
-document.querySelectorAll('#site-nav a').forEach(a=>a.addEventListener('click',()=>closeMenu()));
+const ok=v=>!(v?.stock?.type==='LIMITED'&&Number(v?.stock?.inStock||0)<=0);
+const vImg=v=>v?.images?.[0]?.transformedUrl||v?.images?.[0]?.url||'';
+const vColor=v=>v?.attributes?.color?.name||'';
+const vSwatch=v=>v?.attributes?.color?.swatch||'';
+const vSize=v=>v?.attributes?.size?.name||'';
+
+// ── Normalize Fourthwall payload ──────────────────────────────
+function normalize(payload){
+  const list=Array.isArray(payload)?payload:(payload.products||payload.data||payload.items||[]);
+  return list.map(p=>{
+    const variants=Array.isArray(p.variants)?p.variants:[];
+    const priced=variants.find(ok)||variants[0];
+    const colors=[...new Set(variants.map(v=>vSwatch(v)).filter(Boolean))];
+    return{
+      id:p.id||p.offerId||'',
+      name:p.name||p.title||'Vaultline piece',
+      slug:p.slug||p.handle||p.id,
+      price:p.price?.amount||p.price||priced?.unitPrice?.value||0,
+      currency:p.price?.currency||p.currency||priced?.unitPrice?.currency||'USD',
+      image:p.primaryImageUrl||p.images?.[0]?.transformedUrl||p.images?.[0]?.url||'',
+      copy:clean(p.description)||'',
+      colors:colors.length?colors:['#151515'],
+      variants
+    };
+  });
+}
+
+// ── Product card HTML ─────────────────────────────────────────
+function cardHTML(p,i){
+  const swatches=p.colors.slice(0,6).map((c,ci)=>
+    `<button type="button" class="sw${ci===0?' is-sel':''}" style="--sw:${esc(c)}" data-swatch="${esc(c)}" data-ci="${ci}" tabindex="0" aria-label="Color ${ci+1}"></button>`
+  ).join('');
+  return `<article class="p-card" data-idx="${i}">
+    <div class="p-card-img" data-trigger="quick" data-index="${i}">
+      <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+      <div class="view-label">INSPECT PIECE</div>
+    </div>
+    <div class="p-card-body">
+      <div class="p-card-name">${esc(p.name)}</div>
+      <div class="p-card-price">${money(p.price,p.currency)}</div>
+      <div class="p-card-swatches">${swatches}</div>
+    </div>
+    <div class="p-card-foot">
+      <button class="p-card-open" data-trigger="quick" data-index="${i}">VIEW DETAILS &rarr;</button>
+    </div>
+  </article>`;
+}
+
+// ── Render product grid ───────────────────────────────────────
+function render(list,live,statusText){
+  products=list;
+  grid.innerHTML=list.length
+    ? list.map((p,i)=>cardHTML(p,i)).join('')
+    : '<div class="collection-empty">No products found for this collection.</div>';
+  status.textContent=statusText||(live?'LIVE CATALOG':'STAGED INVENTORY');
+}
+
+function showAllProducts(){
+  shopKicker.textContent='SHOP';
+  shopTitle.textContent='Current Pieces';
+  render(allProducts,catalogLive);
+}
+
+function showCollection(slug){
+  const col=COLLECTIONS[slug];
+  if(!col)return;
+  const wanted=new Set(col.ids);
+  const filtered=allProducts.filter(p=>wanted.has(String(p.id)));
+  shopKicker.textContent='COLLECTION';
+  shopTitle.textContent=col.name;
+  render(filtered,catalogLive,`${col.name} / ${filtered.length} PIECE${filtered.length===1?'':'S'}`);
+  requestAnimationFrame(()=>$('#shop')?.scrollIntoView({behavior:'smooth',block:'start'}));
+}
+
+// ── Catalog load ──────────────────────────────────────────────
+async function loadCatalog(){
+  status.textContent='Loading inventory\u2026';
+  try{
+    const r=await fetch('/api/storefront/products');
+    if(!r.ok)throw 0;
+    const list=normalize(await r.json());
+    if(!list.length)throw 0;
+    allProducts=list;catalogLive=true;showAllProducts();
+  }catch{
+    allProducts=fallbackProducts;catalogLive=false;showAllProducts();
+  }
+}
+
+// ── Card swatch interaction (delegated) ─────────────────────
+grid.addEventListener('click',e=>{
+  const sw=e.target.closest('.p-card-swatches .sw');
+  if(sw){
+    e.stopPropagation();
+    const card=sw.closest('.p-card');
+    const idx=+card.dataset.idx;
+    const p=products[idx];if(!p)return;
+    // Mark selected
+    card.querySelectorAll('.sw').forEach(s=>s.classList.remove('is-sel'));
+    sw.classList.add('is-sel');
+    // Update card image to variant matching this swatch
+    const hex=sw.dataset.swatch;
+    const match=p.variants.find(v=>vSwatch(v)===hex);
+    if(match){const img=vImg(match);if(img)card.querySelector('.p-card-img img').src=img;}
+    // Store selection on card for carry-through to quick-view
+    card.dataset.selectedSwatch=hex;
+    return;
+  }
+  // Quick trigger (image click or button)
+  const trigger=e.target.closest('[data-trigger="quick"]');
+  if(trigger)openQuick(+trigger.dataset.index);
+});
+
+// Keyboard support for card swatches
+grid.addEventListener('keydown',e=>{
+  const sw=e.target.closest('.p-card-swatches .sw');
+  if(sw&&(e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    sw.click();
+  }
+});
+
+// ── Quick view (product detail) ─────────────────────────────
+function openQuick(i){
+  const p=products[i];if(!p)return;
+
+  // Expose product for color-variants.js
+  window.__quickProduct=p;
+
+  // Check if a color was pre-selected on the card
+  const card=grid.querySelector(`.p-card[data-idx="${i}"]`);
+  window.__quickColorSwatch=card?.dataset.selectedSwatch||null;
+
+  quickImage.src=p.image;
+  quickImage.alt=p.name;
+  quickName.textContent=p.name;
+  quickDesc.textContent=p.copy;
+  quickIndex.textContent=`VAULTLINE / ${String(i+1).padStart(3,'0')}`;
+  quickPrice.textContent=money(p.price,p.currency);
+
+  // Render swatches as interactive buttons
+  quickSwatches.innerHTML=p.colors.map((c,ci)=>
+    `<button type="button" class="sw" style="--sw:${esc(c)}" data-swatch="${esc(c)}" data-ci="${ci}" tabindex="0" aria-label="Color ${ci+1}"></button>`
+  ).join('');
+
+  if(quickColorLabel)quickColorLabel.textContent='';
+
+  if(p.variants.length){
+    // Build initial flat variant select (color-variants.js will enhance)
+    quickVariants.innerHTML=p.variants.map(v=>{
+      const sz=vSize(v);const cn=vColor(v);
+      const display=sz||(cn||'Default');
+      return `<button type="button" class="sz" data-vid="${esc(v.id)}" data-color="${esc(cn)}" data-swatch="${esc(vSwatch(v))}" data-size="${esc(sz)}" ${ok(v)?'':'disabled'} aria-label="${esc(display)}">${esc(display)}</button>`;
+    }).join('');
+    quickBuy.textContent='ADD TO CART';
+    quickBuy.dataset.mode='cart';
+  }else{
+    quickVariants.innerHTML='<span style="font-size:11px;color:#5c6370;letter-spacing:.1em">NOT AVAILABLE THROUGH LIVE CART YET</span>';
+    quickBuy.textContent='UNAVAILABLE';
+    quickBuy.dataset.mode='unavailable';
+  }
+
+  quick.classList.add('open');scrim.classList.add('open');
+  quick.setAttribute('aria-hidden','false');
+  document.body.classList.add('locked');
+}
+
+function closeQuick(){
+  quick.classList.remove('open');
+  quick.setAttribute('aria-hidden','true');
+  if(!drawer.classList.contains('open'))scrim.classList.remove('open');
+  document.body.classList.remove('locked');
+}
+
+// ── API helper ────────────────────────────────────────────────
+async function api(path,opt={}){
+  const r=await fetch(path,{...opt,headers:{Accept:'application/json','Content-Type':'application/json',...(opt.headers||{})}});
+  const body=await r.json().catch(()=>({}));
+  if(!r.ok){const d=body.error||body.message||body.detail||`Request failed (${r.status})`;throw new Error(`${r.status}: ${d}`);}
+  return body;
+}
+
+// ── Cart ────────────────────────────────────────────────────
+async function ensureCart(){
+  const id=localStorage.getItem(CART_KEY);
+  if(id){try{return await api(`/api/cart/${encodeURIComponent(id)}`)}catch{localStorage.removeItem(CART_KEY)}}
+  const cart=await api('/api/cart',{method:'POST',body:'{"items":[]}'});
+  localStorage.setItem(CART_KEY,cart.id);return cart;
+}
+
+function cartMath(cart){
+  let count=0,total=0,currency='USD';
+  for(const item of cart?.items||[]){const q=Number(item.quantity)||0,p=Number(item?.variant?.unitPrice?.value)||0;count+=q;total+=q*p;currency=item?.variant?.unitPrice?.currency||currency;}
+  return{count,total,currency};
+}
+
+function showCart(cart){
+  const{count,total,currency}=cartMath(cart);
+  cartCount.textContent=count;cartTotal.textContent=money(total,currency);
+  checkout.disabled=!cart?.id||!count;
+  const items=cart?.items||[];
+  if(!items.length){cartItems.innerHTML='<p class="cart-empty">Your cart is empty.</p>';return;}
+  cartItems.innerHTML=items.map(item=>{
+    const v=item.variant||{},q=Number(item.quantity)||1;
+    const img=v.images?.[0]?.transformedUrl||v.images?.[0]?.url||'';
+    const lbl=[v?.attributes?.color?.name,v?.attributes?.size?.name].filter(Boolean).join(' / ')||v?.name||'';
+    return`<article style="display:grid;grid-template-columns:68px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid rgba(214,220,228,.12)">
+      ${img?`<img src="${esc(img)}" style="width:68px;height:82px;object-fit:contain;background:#0e1014">`:''}<div>
+      <strong style="display:block;font-size:12px;letter-spacing:.04em">${esc(v?.product?.name||v.name||'Piece')}</strong>
+      <span style="display:block;margin-top:4px;font-size:10px;color:#8a9099;letter-spacing:.08em">${esc(lbl)}</span>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <button data-a="dec" data-id="${esc(v.id)}" data-q="${q}" style="width:28px;height:28px;border:1px solid rgba(214,220,228,.18);background:none;color:#d6d6d6;font-size:16px;cursor:pointer">&minus;</button>
+        <span style="font-size:12px;min-width:18px;text-align:center">${q}</span>
+        <button data-a="inc" data-id="${esc(v.id)}" data-q="${q}" style="width:28px;height:28px;border:1px solid rgba(214,220,228,.18);background:none;color:#d6d6d6;font-size:16px;cursor:pointer">+</button>
+        <button data-a="remove" data-id="${esc(v.id)}" style="margin-left:auto;background:none;border:0;color:#8a9099;cursor:pointer;font-size:10px;letter-spacing:.12em">REMOVE</button>
+      </div></div></article>`;
+  }).join('');
+  cartItems.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>changeItem(b));
+}
+
+async function refreshCart(){
+  const id=localStorage.getItem(CART_KEY);
+  if(!id)return showCart({items:[]});
+  try{showCart(await api(`/api/cart/${encodeURIComponent(id)}`))}catch{localStorage.removeItem(CART_KEY);showCart({items:[]});}
+}
+
+async function changeItem(b){
+  const id=localStorage.getItem(CART_KEY),variantId=b.dataset.id,q=+b.dataset.q||1,a=b.dataset.a;
+  if(!id)return;
+  const remove=a==='remove'||(a==='dec'&&q<=1);
+  const path=`/api/cart/${encodeURIComponent(id)}/${remove?'remove':'change'}`;
+  const items=remove?[{variantId}]:[{variantId,quantity:a==='inc'?q+1:q-1}];
+  showCart(await api(path,{method:'POST',body:JSON.stringify({items})}));
+}
+
+async function addSelected(e){
+  if(quickBuy.dataset.mode!=='cart')return;
+  e.preventDefault();
+  // Read selected variant from size buttons
+  const selBtn=quickVariants.querySelector('.sz.is-sel');
+  const variantId=selBtn?.dataset.vid;
+  if(!variantId)return;
+  quickBuy.textContent='ADDING\u2026';
+  try{
+    const cart=await ensureCart();
+    const next=await api(`/api/cart/${encodeURIComponent(cart.id)}/add`,{method:'POST',body:JSON.stringify({items:[{variantId,quantity:1}]})});
+    showCart(next);closeQuick();openCart();
+  }catch(err){
+    console.error('Cart error:',err);
+    quickBuy.textContent='TRY AGAIN';quickBuy.dataset.mode='cart';
+  }finally{
+    if(quickBuy.dataset.mode==='cart'&&quickBuy.textContent==='ADDING\u2026')quickBuy.textContent='ADD TO CART';
+  }
+}
+
+function openCart(){drawer.classList.add('open');scrim.classList.add('open');drawer.setAttribute('aria-hidden','false');document.body.classList.add('locked');refreshCart();}
+function closeCart(){drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');if(!quick.classList.contains('open'))scrim.classList.remove('open');document.body.classList.remove('locked');}
+function closeMenu(){mobNav.classList.remove('open');menuToggle.setAttribute('aria-expanded','false');}
+
+// ── Navigation + event wiring ───────────────────────────────
+menuToggle.onclick=()=>{const o=mobNav.classList.toggle('open');menuToggle.setAttribute('aria-expanded',String(o));};
+document.querySelectorAll('#site-nav a, #mob-nav a').forEach(a=>a.addEventListener('click',closeMenu));
 document.querySelectorAll('[data-shop-all]').forEach(a=>a.addEventListener('click',()=>showAllProducts()));
-document.querySelectorAll('[data-collection]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showCollection(a.dataset.collection)}));
-cartButton.onclick=()=>{closeMenu();openCart()};cartClose.onclick=closeCart;quickClose.onclick=closeQuick;quickBuy.onclick=addSelected;scrim.onclick=()=>{closeQuick();closeCart()};$('#refresh-products').onclick=loadCatalog;checkout.onclick=()=>{const id=localStorage.getItem(CART_KEY);if(id)location.assign(`${STORE_URL}/checkout/?cartId=${encodeURIComponent(id)}&cartCurrency=USD`)};document.querySelectorAll('[data-feature-slug]').forEach(el=>el.onclick=()=>{const i=products.findIndex(p=>p.slug===el.dataset.featureSlug);const j=i<0?allProducts.findIndex(p=>p.slug===el.dataset.featureSlug):i;if(j>=0){if(i<0)products=allProducts;openQuick(i<0?j:i)}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeQuick();closeCart();closeMenu()}});loadCatalog();refreshCart();
+document.querySelectorAll('[data-collection]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showCollection(a.dataset.collection);}));
+cartButton.onclick=()=>{closeMenu();openCart();};
+cartClose.onclick=closeCart;
+quickClose.onclick=closeQuick;
+quickBuy.onclick=addSelected;
+scrim.onclick=()=>{closeQuick();closeCart();};
+$('#refresh-products').onclick=loadCatalog;
+checkout.onclick=()=>{const id=localStorage.getItem(CART_KEY);if(id)location.assign(`${STORE_URL}/checkout/?cartId=${encodeURIComponent(id)}&cartCurrency=USD`);};
+
+// Feature slug triggers (lookbook etc)
+document.querySelectorAll('[data-feature-slug]').forEach(el=>el.onclick=()=>{
+  const i=products.findIndex(p=>p.slug===el.dataset.featureSlug);
+  const j=i<0?allProducts.findIndex(p=>p.slug===el.dataset.featureSlug):i;
+  if(j>=0){if(i<0)products=allProducts;openQuick(i<0?j:i);}
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeQuick();closeCart();closeMenu();}});
+
+// ── Boot ────────────────────────────────────────────────────
+loadCatalog();refreshCart();

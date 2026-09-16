@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 820" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#151a20"/><stop offset=".48" stop-color="#252a2d"/><stop offset="1" stop-color="#080a0c"/></linearGradient>
+ <radialGradient id="cloud" cx="48%" cy="28%" r="66%"><stop stop-color="#74787a" stop-opacity=".27"/><stop offset=".45" stop-color="#353a3d" stop-opacity=".18"/><stop offset="1" stop-color="#080a0c" stop-opacity="0"/></radialGradient>
+ <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#131719"/><stop offset="1" stop-color="#030405"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="28"/></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<rect width="1800" height="820" fill="url(#sky)"/>
+<rect width="1800" height="560" fill="url(#cloud)"/>
+<g opacity=".25" filter="url(#blur)" fill="#b8b9b7"><ellipse cx="380" cy="220" rx="340" ry="95"/><ellipse cx="920" cy="165" rx="410" ry="105"/><ellipse cx="1450" cy="245" rx="330" ry="100"/></g>
+<path d="M0 535 C250 505 420 535 630 518 C870 500 1060 540 1270 516 C1460 493 1620 510 1800 495 L1800 820 L0 820Z" fill="url(#ground)"/>
+<g stroke="#050607" stroke-width="8" fill="none" stroke-linecap="round" opacity=".95">
+ <path d="M185 610 C190 500 183 392 202 286 M201 405 l-56-83 M199 381 l65-112 M195 468 l-88-43 M202 344 l-53-117 M203 330 l76-76"/>
+ <path d="M1565 622 C1558 518 1572 420 1554 302 M1559 445 l-82-91 M1558 393 l70-103 M1562 520 l91-54 M1555 358 l-49-100 M1558 336 l63-75"/>
+ <path d="M340 620 C337 560 345 506 332 448 M336 520 l-47-48 M337 493 l44-70"/>
+ <path d="M1430 628 C1438 565 1426 520 1442 460 M1436 525 l55-49 M1437 492 l-38-62"/>
+</g>
+<g fill="#090b0c" opacity=".92"><path d="M0 650 Q95 605 190 654 T390 648 T620 660 T830 642 T1050 657 T1280 645 T1510 659 T1800 640 V820 H0Z"/></g>
+<g stroke="#1a1d1e" stroke-width="2" opacity=".8"><path d="M50 820l42-184M114 820l-4-154M158 820l42-168M250 820l-22-141M420 820l34-184M515 820l-12-152M1280 820l30-160M1380 820l-23-188M1490 820l47-164M1640 820l-16-188M1720 820l38-155"/></g>
+<!-- standing fractured mirror -->
+<g transform="translate(655 178)">
+ <rect x="0" y="0" width="265" height="455" rx="3" fill="#060809" stroke="#252a2e" stroke-width="16"/>
+ <rect x="18" y="18" width="229" height="419" fill="#151a1d" stroke="#6f7478" stroke-opacity=".34" stroke-width="2"/>
+ <path d="M20 420 L246 420 L246 437 L18 437Z" fill="#050607"/>
+ <path d="M135 18 L131 90 L142 139 L129 208 L139 259 L128 318 L134 437" stroke="#b63a50" stroke-width="2.4" fill="none"/>
+ <path d="M134 115 l-44 34 M137 145 l45 42 M131 208 l-53 34 M137 259 l58 36 M130 316 l-42 41" stroke="#9a3044" stroke-width="1.2" opacity=".72" fill="none"/>
+ <path d="M133 18 L131 90 L142 139 L129 208 L139 259 L128 318 L134 437" stroke="#b63a50" stroke-width="9" opacity=".13" filter="url(#glow)" fill="none"/>
+</g>
+<g fill="#0a0c0d" opacity=".95"><ellipse cx="520" cy="650" rx="150" ry="26"/><ellipse cx="1030" cy="660" rx="190" ry="32"/></g>
+<rect width="1800" height="820" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="70"/>
+</svg>

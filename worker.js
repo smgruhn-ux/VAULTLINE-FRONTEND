@@ -1,5 +1,155 @@
 const API_BASE='https://storefront-api.fourthwall.com/v1';
 
+const ROOT_HTML=`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07090b">
+  <meta name="description" content="Vaultline by Gizzy Graves — dark apparel and objects from inside the GRVEZ VAULT.">
+  <title>Vaultline by Gizzy Graves</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/audit-fix.css">
+</head>
+<body>
+  <header class="hdr">
+    <button class="hdr-menu" id="menu-toggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a class="hdr-brand" href="#top">VAULTLINE<span>BY GIZZY GRAVES</span></a>
+    <nav class="hdr-nav" id="site-nav">
+      <a href="#shop" data-shop-all>SHOP</a>
+      <a href="#collections">COLLECTIONS</a>
+      <a href="#lookbook">LOOKBOOK</a>
+      <a href="/story.html">OUR STORY</a>
+    </nav>
+    <button class="hdr-cart" id="cart-button" aria-label="Cart">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </button>
+  </header>
+
+  <div class="mob-nav" id="mob-nav">
+    <a href="#top">HOME</a>
+    <a href="#shop" data-shop-all>SHOP</a>
+    <a href="#collections">COLLECTIONS</a>
+    <a href="#lookbook">LOOKBOOK</a>
+    <a href="/story.html">OUR STORY</a>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-art" aria-hidden="true"></div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-verse">IN RUIN<br>WE TRUST<br>IN UNITY<br>WE RISE</div>
+      <div class="hero-center">
+        <p class="hero-label">VAULTLINE / 2026</p>
+        <h1>MORE<br>THAN<br>CLOTHING</h1>
+        <p class="hero-sub">A CONTINUATION</p>
+        <a class="btn-ghost" href="#collections">EXPLORE VAULTLINE <span>→</span></a>
+      </div>
+      <div class="hero-bottom">
+        <div class="hero-motto">THE WOUND<br>THE WORK<br>THE CONTINUATION</div>
+        <div class="hero-wordmark">VAULTLINE</div>
+      </div>
+    </section>
+
+    <section class="vault-paths" aria-label="GRVEZ VAULT pathways">
+      <a href="https://grvezvaultofficial.us/music"><span>01</span><strong>MUSIC</strong><i></i></a>
+      <a href="https://grvezvaultofficial.us/archive"><span>02</span><strong>ARCHIVE</strong><i></i></a>
+      <a href="https://grvezvaultofficial.us/relational-continuity"><span>03</span><strong>RCH</strong><i></i></a>
+      <a href="https://grvezvaultofficial.us/films"><span>04</span><strong>FILMS &amp; MEDIA</strong><i></i></a>
+      <a href="#collections"><span>05</span><strong>VAULTLINE</strong><i></i></a>
+    </section>
+
+    <section class="collections" id="collections">
+      <div class="sec-head"><span>01 / COLLECTIONS</span><p>ENTER BY COLLECTION</p></div>
+      <div class="col-grid" id="collection-grid">
+        <a href="#shop" class="col-card col-deadstep" data-collection="deadstep-2"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">01</span><strong>DEADSTEP</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-current" data-collection="submerged"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">02</span><strong>CURRENT BETWEEN</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-omega" data-collection="mens"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">03</span><strong>OMEGA</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-alpha" data-collection="womens"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">04</span><strong>ALPHA</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-grave" data-collection="grave-offerings"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">05</span><strong>GRAVE OFFERINGS</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+        <a href="#shop" class="col-card col-liberty" data-collection="fractured-liberty"><div class="col-shade"></div><div class="col-card-inner"><span class="col-num">06</span><strong>FRACTURED LIBERTY</strong><p>LOADING</p><span class="col-arrow">ENTER →</span></div></a>
+      </div>
+    </section>
+
+    <section class="shop" id="shop">
+      <div class="shop-banner" id="shop-banner">
+        <div class="shop-banner-fracture"></div>
+        <p class="shop-banner-sub" id="shop-kicker">SHOP</p>
+        <h2 id="shop-title">CURRENT PIECES</h2>
+      </div>
+      <div class="shop-bar">
+        <span class="shop-sort">SORT / FEATURED</span>
+        <span class="shop-status" id="catalog-status"></span>
+        <button class="btn-text" id="refresh-products">REFRESH</button>
+      </div>
+      <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <section class="lookbook" id="lookbook">
+      <div class="lookbook-photo">
+        <button class="lookbook-main" data-feature-slug="vaultline-northern-fracture-hoodie" aria-label="Inspect Northern Fracture Hoodie"><img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/69a3a0b2-52a8-4383-954c-f7c5383ceef2.webp" alt="Northern Fracture Hoodie" loading="lazy"></button>
+      </div>
+      <div class="lookbook-text">
+        <p class="eyebrow">02 / EDITORIAL</p>
+        <h2>WEAR<br>WHAT<br>REMAINS</h2>
+        <p>Pieces for the in between.<br>Built from what is left.<br>Made to last.</p>
+        <a class="btn-ghost" href="#shop" data-shop-all>VIEW PIECES <span>→</span></a>
+      </div>
+      <div class="lookbook-strip">
+        <button data-feature-slug="ixxi-vaultline-tee"><img src="https://cdn.fourthwall.com/offer/sh_0e0db572-47ce-453b-a747-142819f87a74/00db2ce5-1ceb-4aee-8ad5-673047373ab1.png" alt="IXXI Vaultline Tee" loading="lazy"></button>
+        <button data-feature-slug="crimson-thorn-baby-tee-vaultline-by-gizzy-graves"><img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/54978fa7-1209-4d1c-9283-ff4f848068a1.webp" alt="Crimson Thorn" loading="lazy"></button>
+        <button data-feature-slug="northern-thorn-cami-vaultline"><img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/6099ed73-bac7-49c4-ac3d-514c6c67aca0.png" alt="Northern Thorn Cami" loading="lazy"></button>
+        <button data-feature-slug="in-ruin-we-trust-slides"><img src="https://cdn.fourthwall.com/customizations/sh_0e0db572-47ce-453b-a747-142819f87a74/699ce60f-5fb4-4dcb-855a-74d3f865b6ee.png" alt="In Ruin We Trust Slides" loading="lazy"></button>
+      </div>
+    </section>
+
+    <section class="brand" id="about">
+      <div class="brand-inner">
+        <div class="brand-copy">
+          <p class="eyebrow">03 / THE BRAND</p>
+          <div class="brand-mark">VAULTLINE<span>BY GIZZY GRAVES</span></div>
+          <p>A collection born from the between, where pain, art, and purpose still coexist.</p>
+          <a class="btn-ghost" href="/story.html">OUR STORY <span>→</span></a>
+        </div>
+        <div class="brand-symbol" aria-hidden="true">
+          <svg viewBox="0 0 220 220" fill="none" stroke="currentColor" stroke-width="1"><circle cx="110" cy="110" r="74"/><line x1="110" y1="24" x2="110" y2="196"/><line x1="24" y1="110" x2="196" y2="110"/><line x1="49" y1="49" x2="171" y2="171"/><line x1="171" y1="49" x2="49" y2="171"/><circle cx="110" cy="110" r="11"/></svg>
+        </div>
+      </div>
+      <div class="brand-values"><div class="bv">QUALITY<br>OVER QUANTITY</div><div class="bv">ORIGINAL<br>DESIGNS</div><div class="bv">BUILT WITH<br>PURPOSE</div><div class="bv">A CONTINUATION<br>NOT A TREND</div></div>
+    </section>
+  </main>
+
+  <aside class="pd" id="quick-view" aria-hidden="true">
+    <button class="pd-close" id="quick-close" aria-label="Close">×</button>
+    <div class="pd-thumbs" id="quick-thumbs"></div>
+    <div class="pd-image"><img class="pd-img" id="quick-image" alt=""></div>
+    <div class="pd-info">
+      <p class="pd-eyebrow" id="quick-index">VAULTLINE</p>
+      <h2 class="pd-name" id="quick-name"></h2>
+      <p class="pd-price" id="quick-price"></p>
+      <p class="pd-desc" id="quick-description"></p>
+      <div class="pd-sep"></div>
+      <div class="pd-field"><span class="pd-label">COLOR: <strong id="quick-color-label"></strong></span><div class="pd-swatches" id="quick-swatches"></div></div>
+      <div class="pd-field"><span class="pd-label">SIZE:</span><div class="pd-sizes" id="quick-variants"></div></div>
+      <button class="pd-atc" id="quick-buy">ADD TO CART</button>
+      <div class="pd-accordion"><details><summary>DETAILS</summary><p id="pd-details-text">Premium quality apparel from the Vaultline collection.</p></details><details><summary>SIZE GUIDE</summary><p>Refer to Fourthwall size charts. True to size for most pieces.</p></details><details><summary>SHIPPING &amp; RETURNS</summary><p>Handled securely by Fourthwall. See checkout for shipping options.</p></details></div>
+      <p class="pd-note">Checkout and fulfillment by Fourthwall.</p>
+    </div>
+  </aside>
+
+  <aside class="cart-drawer" id="cart-drawer" aria-hidden="true"><div class="cart-head"><h2>YOUR CART</h2><button id="cart-close" aria-label="Close">×</button></div><div class="cart-items" id="cart-items"></div><div class="cart-foot"><div class="cart-total-row"><span>TOTAL</span><strong id="cart-total">$0.00</strong></div><button class="pd-atc" id="checkout-button" disabled>CHECKOUT</button><p class="cart-note">Secure checkout via Fourthwall.</p></div></aside>
+  <div class="scrim" id="scrim"></div>
+
+  <footer class="ft"><div><div class="ft-brand">VAULTLINE</div><div class="ft-sub">GRVEZ VAULT DIVISION / EST. 2026</div></div><div class="ft-links"><a href="#top">HOME</a><a href="#shop" data-shop-all>SHOP</a><a href="/story.html">OUR STORY</a><a href="https://www.instagram.com/grvezvault" rel="noopener" target="_blank">INSTAGRAM</a></div><div class="ft-legal"><a href="/terms.html">TERMS</a><a href="/privacy.html">PRIVACY</a><a href="/faq.html">FAQ</a></div></footer>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>`;
+
 function json(data,status=200){
   return new Response(JSON.stringify(data),{
     status,
@@ -63,17 +213,17 @@ async function storefrontProducts(collectionSlug,token){
   }
 }
 
-async function serveRoot(request,env){
-  const url=new URL(request.url);
-  url.pathname='/index.html';
-  url.search='';
-  const assetResponse=await env.ASSETS.fetch(new Request(url.toString(),request));
-  const headers=new Headers(assetResponse.headers);
-  headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
-  headers.set('pragma','no-cache');
-  headers.set('expires','0');
-  headers.set('x-vaultline-root','worker-index');
-  return new Response(assetResponse.body,{status:assetResponse.status,statusText:assetResponse.statusText,headers});
+function serveRoot(){
+  return new Response(ROOT_HTML,{
+    status:200,
+    headers:{
+      'content-type':'text/html; charset=utf-8',
+      'cache-control':'no-store, no-cache, must-revalidate, max-age=0',
+      'pragma':'no-cache',
+      'expires':'0',
+      'x-vaultline-root':'worker-inline-e8d05bec'
+    }
+  });
 }
 
 export default {
@@ -81,7 +231,7 @@ export default {
     const url=new URL(request.url);
     const token=String(env.FOURTHWALL_STOREFRONT_TOKEN||'').trim();
 
-    if(url.pathname==='/')return serveRoot(request,env);
+    if(url.pathname==='/')return serveRoot();
 
     if(url.pathname==='/api/storefront/products'){
       if(request.method.toUpperCase()!=='GET')return json({error:'Method not allowed'},405);

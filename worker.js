@@ -46,10 +46,27 @@ async function fourthwallFetch(target,token,init={}){
   return {response,text};
 }
 
+async function serveRoot(request,env){
+  const url=new URL(request.url);
+  url.pathname='/index.html';
+  url.search='';
+  const assetResponse=await env.ASSETS.fetch(new Request(url.toString(),request));
+  const headers=new Headers(assetResponse.headers);
+  headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('pragma','no-cache');
+  headers.set('expires','0');
+  headers.set('x-vaultline-root','worker-index');
+  return new Response(assetResponse.body,{status:assetResponse.status,statusText:assetResponse.statusText,headers});
+}
+
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
     const token=String(env.FOURTHWALL_STOREFRONT_TOKEN||'').trim();
+
+    if(url.pathname==='/'){
+      return serveRoot(request,env);
+    }
 
     if(url.pathname==='/api/storefront/products'){
       if(request.method.toUpperCase()!=='GET')return json({error:'Method not allowed'},405);

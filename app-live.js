@@ -10,7 +10,7 @@ const COLLECTION_COVER_OFFERS={
   'mens':'123cfbfc-9f7b-4b46-8922-d24b74577abe',
   'womens':'26be87d7-fa56-48fa-a361-712e23bf675f',
   'grave-offerings':'b5f2171f-4bf6-4414-b00e-3f03d0d01495',
-  'fractured-liberty':'dd98fc71-cdda-48ee-8572-f5fea512fec6'
+  'fractured-liberty':'61ee0527-9900-4185-b526-fa285a7220cf'
 };
 const fallbackProducts=[];let allProducts=[];let products=[];let catalogLive=false;let activeCollection=null;const collectionCache=new Map();
 const $=s=>document.querySelector(s);const grid=$('#product-grid'),status=$('#catalog-status'),drawer=$('#cart-drawer'),scrim=$('#scrim'),cartButton=$('#cart-button'),cartClose=$('#cart-close'),checkout=$('#checkout-button'),cartItems=$('#cart-items'),cartCount=$('#cart-count'),cartTotal=$('#cart-total'),quick=$('#quick-view'),quickClose=$('#quick-close'),quickImage=$('#quick-image'),quickName=$('#quick-name'),quickDesc=$('#quick-description'),quickIndex=$('#quick-index'),quickSwatches=$('#quick-swatches'),quickVariants=$('#quick-variants'),quickPrice=$('#quick-price'),quickBuy=$('#quick-buy'),quickColorLabel=$('#quick-color-label'),quickThumbs=$('#quick-thumbs'),shopTitle=$('#shop-title'),shopKicker=$('#shop-kicker'),menuToggle=$('#menu-toggle'),mobNav=$('#mob-nav');

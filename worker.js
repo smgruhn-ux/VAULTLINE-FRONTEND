@@ -26,6 +26,7 @@ function mapProduct(product){
     price:variants[0]?.unitPrice?.value||0,
     currency:variants[0]?.unitPrice?.currency||'USD',
     primaryImageUrl:product.images?.[0]?.transformedUrl||product.images?.[0]?.url||'',
+    images:Array.isArray(product.images)?product.images:[],
     variants
   };
 }
@@ -46,6 +47,22 @@ async function fourthwallFetch(target,token,init={}){
   return {response,text};
 }
 
+async function storefrontProducts(collectionSlug,token){
+  const safe=String(collectionSlug||'').trim();
+  if(!/^[a-z0-9-]+$/i.test(safe))return json({error:'Invalid collection slug'},400);
+  try{
+    const target=new URL(`${API_BASE}/collections/${encodeURIComponent(safe)}/products`);
+    target.searchParams.set('currency','USD');
+    target.searchParams.set('limit','100');
+    const result=await fourthwallFetch(target.toString(),token,{method:'GET',headers:{Accept:'application/json'}});
+    if(result.error)return result.error;
+    const payload=JSON.parse(result.text||'{}');
+    return json({collection:safe,products:(payload.results||[]).map(mapProduct)});
+  }catch(error){
+    return json({error:`Fourthwall catalog request failed: ${error?.message||'unknown network error'}`},502);
+  }
+}
+
 async function serveRoot(request,env){
   const url=new URL(request.url);
   url.pathname='/index.html';
@@ -64,24 +81,19 @@ export default {
     const url=new URL(request.url);
     const token=String(env.FOURTHWALL_STOREFRONT_TOKEN||'').trim();
 
-    if(url.pathname==='/'){
-      return serveRoot(request,env);
-    }
+    if(url.pathname==='/')return serveRoot(request,env);
 
     if(url.pathname==='/api/storefront/products'){
       if(request.method.toUpperCase()!=='GET')return json({error:'Method not allowed'},405);
       if(!token)return json({error:'Fourthwall Storefront token is not configured on this Worker.'},503);
-      try{
-        const target=new URL(`${API_BASE}/collections/all/products`);
-        target.searchParams.set('currency','USD');
-        target.searchParams.set('limit','100');
-        const result=await fourthwallFetch(target.toString(),token,{method:'GET',headers:{Accept:'application/json'}});
-        if(result.error)return result.error;
-        const payload=JSON.parse(result.text||'{}');
-        return json({products:(payload.results||[]).map(mapProduct)});
-      }catch(error){
-        return json({error:`Fourthwall catalog request failed: ${error?.message||'unknown network error'}`},502);
-      }
+      return storefrontProducts('all',token);
+    }
+
+    const collectionMatch=url.pathname.match(/^\/api\/storefront\/collections\/([a-z0-9-]+)\/products$/i);
+    if(collectionMatch){
+      if(request.method.toUpperCase()!=='GET')return json({error:'Method not allowed'},405);
+      if(!token)return json({error:'Fourthwall Storefront token is not configured on this Worker.'},503);
+      return storefrontProducts(collectionMatch[1],token);
     }
 
     const target=cartTarget(url.pathname);

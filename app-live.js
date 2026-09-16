@@ -1,4 +1,5 @@
-const STORE_URL='https://vaultlineofficial.us';
+// Checkout must remain on Fourthwall when the custom frontend owns the main domain.
+const STORE_URL='https://vaultlineofficial-shop.fourthwall.com';
 const CART_KEY='vaultline_fourthwall_cart_id';
 const COLLECTIONS={
 'deadstep-2':{name:'DEADSTEP',ids:['a6d1a51d-dbc2-443e-ae40-b63aa063d162','36540eef-7b3b-4c11-8a74-2ecfe4a8112c','b898acba-6d88-497a-92ef-1ada640529f9','1090eea7-35ee-4479-a97b-2d1f519f5877']},

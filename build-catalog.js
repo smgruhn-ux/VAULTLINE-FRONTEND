@@ -24,6 +24,7 @@ async function buildCatalog() {
   const data = await response.json();
 
   const products = (data.results || []).map((product) => ({
+    id: product.id,
     name: product.name,
     slug: product.slug,
     description: product.description || '',

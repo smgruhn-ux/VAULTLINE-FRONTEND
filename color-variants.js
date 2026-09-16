@@ -1,89 +1,142 @@
-// Make quick-view color swatches interactive and keep them synced with the variant selector.
-const quickSwatches = document.querySelector('#quick-swatches');
-const quickVariants = document.querySelector('#quick-variants');
+// ═══════════════════════════════════════════════════════════════
+// Vaultline — color-variants.js
+// Enhanced color/size selection for the quick-view product detail.
+// Loaded after app-live.js. Reads window.__quickProduct / __quickColorSwatch.
+// ═══════════════════════════════════════════════════════════════
 
-function colorNameFromOption(option) {
-  const text = (option?.textContent || '').replace(/\s+—\s+SOLD OUT$/i, '').trim();
-  return text.split(' / ')[0].trim();
-}
+const qSwatches=document.querySelector('#quick-swatches');
+const qVariants=document.querySelector('#quick-variants');
+const qImage=document.querySelector('#quick-image');
+const qPrice=document.querySelector('#quick-price');
+const qColorLabel=document.querySelector('#quick-color-label');
+const qBuy=document.querySelector('#quick-buy');
 
-function getColorGroups(select) {
-  const groups = [];
-  [...select.options].forEach((option) => {
-    const name = colorNameFromOption(option);
-    if (name && !groups.some((group) => group.name === name)) {
-      groups.push({ name, options: [] });
-    }
-    const group = groups.find((item) => item.name === name);
-    if (group) group.options.push(option);
-  });
-  return groups;
-}
+let syncing=false;
 
-function syncSwatches() {
-  const select = document.querySelector('#variant-select');
-  if (!select || !quickSwatches) return;
+// ── Helpers (mirror app-live.js) ──────────────────────────────
+const ok=v=>!(v?.stock?.type==='LIMITED'&&Number(v?.stock?.inStock||0)<=0);
+const vImg=v=>v?.images?.[0]?.transformedUrl||v?.images?.[0]?.url||'';
+const vColor=v=>v?.attributes?.color?.name||'';
+const vSwatch=v=>v?.attributes?.color?.swatch||'';
+const vSize=v=>v?.attributes?.size?.name||'';
+const esc=(v='')=>String(v).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+const money=(v,c='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(Number(v)||0);
 
-  const swatches = [...quickSwatches.querySelectorAll('span')];
-  const groups = getColorGroups(select);
-  const selectedColor = colorNameFromOption(select.options[select.selectedIndex]);
-
-  swatches.forEach((swatch, index) => {
-    const group = groups[index];
-    swatch.classList.toggle('is-selected', !!group && group.name === selectedColor);
-    swatch.classList.toggle('is-unavailable', !!group && !group.options.some((option) => !option.disabled));
-    swatch.setAttribute('role', 'button');
-    swatch.setAttribute('tabindex', group?.options.some((option) => !option.disabled) ? '0' : '-1');
-    swatch.setAttribute('aria-label', group ? `Select ${group.name}` : 'Select color');
-    swatch.setAttribute('aria-pressed', String(!!group && group.name === selectedColor));
-  });
-}
-
-function chooseSwatch(swatch) {
-  const select = document.querySelector('#variant-select');
-  if (!select || !quickSwatches) return;
-
-  const swatches = [...quickSwatches.querySelectorAll('span')];
-  const index = swatches.indexOf(swatch);
-  const group = getColorGroups(select)[index];
-  if (!group) return;
-
-  const next = group.options.find((option) => !option.disabled);
-  if (!next) return;
-
-  select.value = next.value;
-  select.dispatchEvent(new Event('change', { bubbles: true }));
-  syncSwatches();
-}
-
-document.addEventListener('click', (event) => {
-  const swatch = event.target.closest('#quick-swatches span');
-  if (swatch) chooseSwatch(swatch);
-});
-
-document.addEventListener('keydown', (event) => {
-  const swatch = event.target.closest?.('#quick-swatches span');
-  if (swatch && (event.key === 'Enter' || event.key === ' ')) {
-    event.preventDefault();
-    chooseSwatch(swatch);
+// ── Group variants by swatch hex (aligns with rendered swatch dots) ─
+function colorGroups(variants){
+  const out=[];const seen=new Set();
+  for(const v of variants){
+    const sw=vSwatch(v);if(!sw)continue;
+    if(!seen.has(sw)){seen.add(sw);out.push({name:vColor(v),swatch:sw,image:'',variants:[]});}
+    const g=out.find(x=>x.swatch===sw);
+    g.variants.push(v);
+    if(!g.image){const img=vImg(v);if(img)g.image=img;}
   }
+  return out;
+}
+
+// ── Apply a color selection ───────────────────────────────────
+function applyColor(swatchHex,groups){
+  if(!groups.length)return;
+  const group=groups.find(g=>g.swatch===swatchHex)||groups[0];
+
+  // 1. Highlight the selected swatch dot
+  const dots=[...(qSwatches?.querySelectorAll('.sw')||[])];
+  dots.forEach((dot,i)=>{
+    const g=groups[i];
+    const sel=!!g&&g.swatch===group.swatch;
+    const stock=!!g&&g.variants.some(ok);
+    dot.classList.toggle('is-sel',sel);
+    dot.classList.toggle('is-out',!stock);
+    dot.setAttribute('aria-pressed',String(sel));
+  });
+
+  // 2. Show selected color name
+  if(qColorLabel)qColorLabel.textContent=group.name;
+
+  // 3. Update product image
+  if(qImage&&group.image)qImage.src=group.image;
+
+  // 4. Rebuild size buttons for this color
+  rebuildSizes(group);
+
+  // 5. Update price
+  updatePrice(group);
+}
+
+function rebuildSizes(group){
+  if(!qVariants)return;
+  syncing=true;
+  const variants=group.variants;
+  qVariants.innerHTML=variants.map(v=>{
+    const sz=vSize(v);const cn=vColor(v);
+    const display=sz||(cn||'Default');
+    return `<button type="button" class="sz" data-vid="${esc(v.id)}" data-swatch="${esc(vSwatch(v))}" data-size="${esc(sz)}" ${ok(v)?'':'disabled class="sz is-out"'} aria-label="${esc(display)}">${esc(display)}</button>`;
+  }).join('');
+  // Auto-select first available size
+  const first=qVariants.querySelector('.sz:not([disabled])');
+  if(first)first.classList.add('is-sel');
+  requestAnimationFrame(()=>{syncing=false;});
+}
+
+function updatePrice(group){
+  if(!qPrice)return;
+  const selBtn=qVariants?.querySelector('.sz.is-sel');
+  const vid=selBtn?.dataset.vid;
+  const v=vid?group.variants.find(x=>x.id===vid):group.variants.find(ok)||group.variants[0];
+  if(v?.unitPrice)qPrice.textContent=money(v.unitPrice.value,v.unitPrice.currency);
+}
+
+// ── Size button click ─────────────────────────────────────────
+qVariants?.addEventListener('click',e=>{
+  const btn=e.target.closest('.sz:not([disabled])');
+  if(!btn)return;
+  qVariants.querySelectorAll('.sz').forEach(s=>s.classList.remove('is-sel'));
+  btn.classList.add('is-sel');
+  // Update price for selected size
+  const p=window.__quickProduct;if(!p)return;
+  const v=p.variants.find(x=>x.id===btn.dataset.vid);
+  if(v?.unitPrice)qPrice.textContent=money(v.unitPrice.value,v.unitPrice.currency);
 });
 
-document.addEventListener('change', (event) => {
-  if (event.target?.id === 'variant-select') syncSwatches();
+qVariants?.addEventListener('keydown',e=>{
+  const btn=e.target.closest('.sz');
+  if(btn&&(e.key==='Enter'||e.key===' ')){e.preventDefault();btn.click();}
 });
 
-// The quick-view contents are populated dynamically, so observe them and style/sync when opened.
-const observer = new MutationObserver(() => syncSwatches());
-if (quickSwatches) observer.observe(quickSwatches, { childList: true, subtree: true });
-if (quickVariants) observer.observe(quickVariants, { childList: true, subtree: true });
+// ── Swatch click in quick-view ────────────────────────────────
+qSwatches?.addEventListener('click',e=>{
+  const dot=e.target.closest('.sw');
+  if(!dot)return;
+  const p=window.__quickProduct;
+  if(!p?.variants?.length)return;
+  const groups=colorGroups(p.variants);
+  const idx=[...(qSwatches.querySelectorAll('.sw'))].indexOf(dot);
+  const group=groups[idx];
+  if(!group||!group.variants.some(ok))return;
+  applyColor(group.swatch,groups);
+});
 
-const style = document.createElement('style');
-style.textContent = `
-#quick-swatches span{cursor:pointer;position:relative;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}
-#quick-swatches span:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.7)!important;}
-#quick-swatches span.is-selected{border-color:#f2f1ed!important;box-shadow:0 0 0 2px #050505,0 0 0 3px #f2f1ed!important;transform:translateY(-1px);}
-#quick-swatches span.is-unavailable{opacity:.28;cursor:not-allowed;}
-#quick-swatches span:focus-visible{outline:2px solid #b63a50;outline-offset:3px;}
-`;
-document.head.appendChild(style);
+qSwatches?.addEventListener('keydown',e=>{
+  const dot=e.target.closest('.sw');
+  if(dot&&(e.key==='Enter'||e.key===' ')){e.preventDefault();dot.click();}
+});
+
+// ── Auto-init when quick-view opens ───────────────────────────
+function initialSync(){
+  if(syncing)return;
+  const p=window.__quickProduct;
+  if(!p?.variants?.length)return;
+  const groups=colorGroups(p.variants);
+  if(!groups.length)return;
+  // If only one unnamed group, skip color selection
+  if(groups.length<=1&&!groups[0].name)return;
+  // Use pre-selected swatch from card, or default to first
+  const preSel=window.__quickColorSwatch;
+  const target=preSel&&groups.find(g=>g.swatch===preSel)?preSel:groups[0].swatch;
+  applyColor(target,groups);
+}
+
+// Observe swatch container for content changes (triggered by openQuick)
+const obs=new MutationObserver(()=>requestAnimationFrame(initialSync));
+if(qSwatches)obs.observe(qSwatches,{childList:true});

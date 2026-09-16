@@ -1,0 +1,3 @@
+Force Cloudflare production rebuild after worker-inline root fix.
+Target worker commit: 92259ffeaab1896d077a63208aa692d16a445f77
+Expected root header: x-vaultline-root: worker-inline-e8d05bec

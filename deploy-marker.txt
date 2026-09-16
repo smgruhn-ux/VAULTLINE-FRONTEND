@@ -1,0 +1,2 @@
+Force production rebuild for generated Vaultline imagery.
+Commit source includes generated replacement assets and updated audit-fix.css.

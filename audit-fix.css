@@ -1,258 +1,60 @@
-/* Vaultline visual system — approved concept board pass */
-
-html,body{background:#07090b!important}
-body{
-  background:linear-gradient(180deg,#07090b 0%,#090c10 44%,#07090b 100%)!important;
-  color:#dedede!important;
-  background-attachment:fixed!important;
-}
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap');
 
 :root{
+  --bg:#07090b;
+  --panel:#0d1116;
+  --paper:#e6e2dc;
+  --muted:#9aa2ac;
   --cr:#b63a50;
-  --steel:#8b94a0;
-  --paper:#dedede;
-  --ink:#07090b;
-  --panel:#0c1014;
-  --line:rgba(255,255,255,.12);
+  --line:rgba(255,255,255,.11);
+  --serif:'Cormorant Garamond',Georgia,serif!important;
+  --sans:'Rajdhani',system-ui,sans-serif!important;
 }
 
-/* HEADER — compact, editorial, high-end */
-.hdr{
-  height:66px!important;
-  padding:0 28px!important;
-  background:rgba(5,7,9,.97)!important;
-  border-bottom:1px solid rgba(255,255,255,.12)!important;
-  backdrop-filter:blur(16px)!important;
-}
-.hdr-brand{font-size:22px!important;letter-spacing:.15em!important}
-.hdr-brand span{font-size:7px!important;letter-spacing:.34em!important;color:#989fa8!important}
-.hdr-nav{gap:30px!important}
-.hdr-nav a{font-size:9px!important;letter-spacing:.19em!important;color:#aeb4bc!important}
-.hdr-nav a:hover{color:#fff!important}
+html,body{background:#07090b!important}
+body{background:linear-gradient(180deg,#07090b 0%,#090c10 48%,#07090b 100%)!important;color:var(--paper)!important}
+h1,h2,h3,.hdr-brand,.brand-mark,.vault-paths strong,.col-card strong,.p-card-name,.ft-brand{font-family:var(--serif)!important}
 
-/* HERO — restore the actual cinematic image direction from the concept board */
-.hero{
-  height:min(760px,calc(100vh - 66px))!important;
-  min-height:620px!important;
-  border-bottom:1px solid rgba(255,255,255,.1)!important;
-  background:#07090b!important;
-}
-.hero-art{
-  background-image:
-    linear-gradient(90deg,rgba(4,5,7,.28),rgba(4,5,7,.12)),
-    url('https://grvezvaultofficial.us/vaultline-hero.jpg')!important;
-  background-position:center,center 48%!important;
-  background-size:cover,cover!important;
-  background-repeat:no-repeat!important;
-  filter:grayscale(.12) saturate(.72) contrast(1.11) brightness(.68)!important;
-  transform:scale(1.01)!important;
-}
-.hero-art::before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:
-    linear-gradient(90deg,rgba(3,5,8,.70) 0%,rgba(3,5,8,.18) 30%,rgba(3,5,8,.08) 55%,rgba(3,5,8,.62) 100%),
-    linear-gradient(180deg,rgba(3,5,8,.06),rgba(3,5,8,.08) 56%,rgba(3,5,8,.88) 100%);
-}
-.hero-art::after{
-  content:"";position:absolute;top:0;bottom:0;left:49.7%;width:1px;
-  background:linear-gradient(transparent 7%,rgba(182,58,80,.24) 22%,#b63a50 47%,rgba(182,58,80,.38) 74%,transparent 95%);
-  box-shadow:0 0 20px rgba(182,58,80,.18);
-}
-.hero-shade{display:none!important}
-.hero-verse{left:3.2vw!important;top:23%!important;font-size:10px!important;line-height:1.9!important;letter-spacing:.30em!important;color:#c6c8ca!important;text-shadow:0 3px 16px #000!important}
-.hero-center{right:5.8vw!important;top:48%!important;width:min(500px,37vw)!important;transform:translateY(-45%)!important}
-.hero-label{font-size:9px!important;letter-spacing:.27em!important;color:#aeb4ba!important;margin-bottom:16px!important}
-.hero h1{font-size:clamp(58px,6.2vw,94px)!important;line-height:.88!important;letter-spacing:.025em!important;color:#e6e4df!important;text-shadow:0 6px 26px rgba(0,0,0,.78)!important}
-.hero-sub{margin:18px 0 28px!important;font-size:10px!important;letter-spacing:.40em!important;color:#b8bdc3!important}
-.hero .btn-ghost{background:rgba(7,9,11,.52)!important;border-color:rgba(230,230,230,.42)!important;padding:13px 19px!important}
-.hero-bottom{left:3.2vw!important;right:3.2vw!important;bottom:28px!important}
-.hero-motto{font-size:9px!important;line-height:1.75!important;letter-spacing:.25em!important;color:#8f969f!important}
-.hero-wordmark{font-size:clamp(28px,3vw,48px)!important;color:rgba(255,255,255,.12)!important}
+/* header */
+.hdr{height:62px!important;padding:0 30px!important;background:rgba(5,7,9,.97)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(14px)!important}
+.hdr-brand{font-size:24px!important;font-weight:500!important;letter-spacing:.12em!important}
+.hdr-brand span{font-family:var(--sans)!important;font-size:7px!important;letter-spacing:.31em!important;color:#9da4ad!important}
+.hdr-nav{gap:34px!important}.hdr-nav a{font:700 10px/1 var(--sans)!important;letter-spacing:.18em!important;color:#aeb4bb!important}
 
-/* PATHWAYS — designed as image-led editorial gateways like the board */
-.vault-paths{
-  grid-template-columns:repeat(5,1fr)!important;
-  gap:8px!important;
-  padding:18px 1.2vw 76px!important;
-  background:#07090b!important;
-}
-.vault-paths a{
-  min-height:185px!important;
-  border:1px solid rgba(255,255,255,.14)!important;
-  background:#0b0e12!important;
-  overflow:hidden!important;
-}
-.vault-paths a::before{
-  opacity:.58!important;
-  background:
-    linear-gradient(180deg,rgba(5,7,9,.08),rgba(5,7,9,.88)),
-    url('https://grvezvaultofficial.us/vaultline-hero.jpg') center/cover no-repeat!important;
-  filter:grayscale(.55) contrast(1.05) brightness(.72)!important;
-}
-.vault-paths a:nth-child(2)::before{background-position:33% 55%!important}
-.vault-paths a:nth-child(3)::before{background-position:58% 50%!important}
-.vault-paths a:nth-child(4)::before{background-position:75% 54%!important}
-.vault-paths a:nth-child(5)::before{background-position:49% 50%!important}
-.vault-paths a:hover{transform:translateY(-3px)!important;border-color:rgba(255,255,255,.30)!important}
-.vault-paths span{color:#b63a50!important}
-.vault-paths strong{font-size:clamp(15px,1.35vw,20px)!important;letter-spacing:.045em!important;color:#e4e2de!important}
+/* hero: closer to the approved board - image led, compact type, no oversized type wall */
+.hero{height:min(700px,calc(100vh - 62px))!important;min-height:620px!important;background:#05070a!important;border-bottom:1px solid var(--line)!important}
+.hero-art{background-image:linear-gradient(90deg,rgba(3,5,7,.42) 0%,rgba(3,5,7,.11) 43%,rgba(3,5,7,.26) 100%),url('https://grvezvaultofficial.us/vaultline-hero.jpg')!important;background-size:cover!important;background-position:center 62%!important;filter:grayscale(.18) saturate(.68) contrast(1.08) brightness(.78)!important;transform:none!important}
+.hero-art::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,9,.78) 0,rgba(5,7,9,.08) 16%,rgba(5,7,9,.03) 64%,rgba(5,7,9,.78) 100%)!important;pointer-events:none}
+.hero-art::after{content:"";position:absolute;top:8%;bottom:7%;left:50%;width:1px;background:linear-gradient(transparent,rgba(182,58,80,.28),#b63a50 50%,rgba(182,58,80,.24),transparent);box-shadow:0 0 18px rgba(182,58,80,.2)}
+.hero::before,.hero::after{display:none!important}.hero-shade{display:none!important}
+.hero-verse{left:3.4vw!important;top:25%!important;font:700 10px/2.05 var(--sans)!important;letter-spacing:.28em!important;color:#c5c8cb!important;text-shadow:0 2px 18px #000!important}
+.hero-center{right:7.2vw!important;top:49%!important;width:min(410px,34vw)!important;transform:translateY(-44%)!important}
+.hero-label{font:700 9px/1 var(--sans)!important;letter-spacing:.25em!important;color:#aeb4ba!important;margin-bottom:14px!important}
+.hero h1{font-family:var(--serif)!important;font-weight:500!important;font-size:clamp(50px,4.8vw,76px)!important;line-height:.86!important;letter-spacing:.015em!important;color:#e9e5df!important;text-shadow:0 5px 24px rgba(0,0,0,.68)!important}
+.hero-sub{margin:17px 0 26px!important;font:700 10px/1 var(--sans)!important;letter-spacing:.34em!important;color:#b6bcc2!important}
+.hero .btn-ghost{padding:13px 18px!important;background:rgba(5,7,9,.55)!important;border-color:rgba(255,255,255,.32)!important}
+.hero-bottom{left:3.4vw!important;right:3.4vw!important;bottom:24px!important}.hero-motto{font:700 9px/1.8 var(--sans)!important;letter-spacing:.24em!important;color:#8f969f!important}.hero-wordmark{font-family:var(--serif)!important;font-size:38px!important;letter-spacing:.13em!important;color:rgba(255,255,255,.09)!important}
 
-/* COLLECTIONS — large, cinematic cards with visible imagery */
-.collections{padding:0 1.2vw 96px!important;background:#07090b!important}
-.sec-head{margin-bottom:14px!important;padding-bottom:10px!important;border-color:rgba(255,255,255,.12)!important}
-.col-grid{gap:8px!important}
-.col-card{
-  min-height:365px!important;
-  background:#0d1116!important;
-  border-color:rgba(255,255,255,.10)!important;
-}
-.col-card::before{
-  background-image:var(--collection-image,none)!important;
-  background-size:cover!important;
-  background-position:center!important;
-  opacity:.70!important;
-  filter:grayscale(.18) saturate(.78) contrast(1.08) brightness(.78)!important;
-}
-.col-card:not([data-loaded="true"])::before{opacity:.22!important}
-.col-card:hover::before{opacity:.82!important;transform:scale(1.025)!important}
-.col-shade{background:linear-gradient(180deg,rgba(5,7,10,.02) 0%,rgba(5,7,10,.14) 44%,rgba(4,6,9,.94) 92%)!important}
-.col-card-inner{padding:24px!important}
-.col-num{color:#b63a50!important}
-.col-card strong{font-size:clamp(21px,1.8vw,28px)!important;color:#e4e2de!important}
-.col-card p{color:#a5acb5!important}
+/* five pathway gateways */
+.vault-paths{grid-template-columns:repeat(5,1fr)!important;gap:10px!important;padding:18px 1.1vw 76px!important;background:#07090b!important}
+.vault-paths a{min-height:185px!important;border:1px solid rgba(255,255,255,.13)!important;background:#0b0e12!important;overflow:hidden!important}
+.vault-paths a::before{opacity:.52!important;background:linear-gradient(180deg,rgba(4,6,8,.03),rgba(4,6,8,.88)),url('https://grvezvaultofficial.us/vaultline-hero.jpg') center/cover no-repeat!important;filter:grayscale(.5) contrast(1.05) brightness(.78)!important}
+.vault-paths a:hover{transform:translateY(-3px)!important;border-color:rgba(255,255,255,.26)!important}.vault-paths span{color:var(--cr)!important}.vault-paths strong{font-size:clamp(19px,1.55vw,25px)!important;font-weight:500!important;letter-spacing:.035em!important;color:#e5e1db!important}
 
-/* COLLECTION/SHOP BANNER — match the board's full-width editorial header */
-.shop{padding:0 1.2vw 104px!important;background:#07090b!important}
-.shop-banner{
-  min-height:300px!important;
-  margin-bottom:12px!important;
-  background:
-    linear-gradient(90deg,rgba(6,8,11,.72),rgba(6,8,11,.25) 38%,rgba(6,8,11,.25) 62%,rgba(6,8,11,.72)),
-    url('https://grvezvaultofficial.us/vaultline-hero.jpg') center 48%/cover no-repeat!important;
-  filter:none!important;
-  border:1px solid rgba(255,255,255,.10)!important;
-}
-.shop-banner::after{background:linear-gradient(180deg,rgba(4,6,9,.04),rgba(4,6,9,.34) 58%,rgba(4,6,9,.74))!important}
-.shop-banner-fracture{opacity:.95!important;background:linear-gradient(transparent,rgba(182,58,80,.28),#b63a50 48%,rgba(182,58,80,.28),transparent)!important;box-shadow:0 0 20px rgba(182,58,80,.22)!important}
-.shop-banner-sub{top:36%!important;color:#c0c4c9!important}
-.shop-banner h2{top:44%!important;font-size:clamp(42px,4.8vw,70px)!important;letter-spacing:.055em!important;color:#e7e5e1!important}
-.shop-bar{padding:11px 4px 16px!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
-.product-grid{gap:18px!important}
-.p-card-img{background:linear-gradient(180deg,#171b20,#0d1014)!important;border-color:rgba(255,255,255,.10)!important}
-.p-card-img img{padding:5%!important;filter:brightness(.92) contrast(1.04)!important}
-.p-card-name{font-size:14px!important;letter-spacing:.04em!important}
-.p-card-price{color:#c1c5ca!important}
+/* collections */
+.collections{padding:0 1.1vw 94px!important;background:#07090b!important}.sec-head{margin-bottom:14px!important;padding:0 4px 11px!important;border-bottom:1px solid var(--line)!important}
+.col-grid{gap:10px!important}.col-card{min-height:350px!important;background:#0d1116!important;border-color:rgba(255,255,255,.09)!important}.col-card::before{background-image:var(--collection-image,none)!important;background-size:cover!important;background-position:center!important;opacity:.72!important;filter:grayscale(.15) saturate(.8) contrast(1.06) brightness(.82)!important}.col-card:hover::before{opacity:.86!important;transform:scale(1.025)!important}.col-shade{background:linear-gradient(180deg,rgba(5,7,10,.02),rgba(5,7,10,.14) 46%,rgba(4,6,9,.94) 92%)!important}.col-card-inner{padding:24px!important}.col-num{color:var(--cr)!important}.col-card strong{font-size:clamp(25px,2vw,33px)!important;font-weight:500!important;letter-spacing:.02em!important}.col-card p{color:#a5acb5!important}
 
-/* LOOKBOOK — split editorial panel from the approved board */
-.lookbook{
-  grid-template-columns:1.08fr .92fr!important;
-  grid-template-rows:minmax(560px,68vh) auto!important;
-  background:#080a0d!important;
-  border-top:1px solid rgba(255,255,255,.11)!important;
-  border-bottom:1px solid rgba(255,255,255,.11)!important;
-}
-.lookbook-photo{background:linear-gradient(135deg,#12161b,#080a0d)!important}
-.lookbook-photo::before{background:radial-gradient(circle at 50% 52%,rgba(182,58,80,.09),transparent 38%)!important}
-.lookbook-main img{width:100%!important;height:100%!important;object-fit:contain!important;padding:3.5%!important;filter:brightness(.78) contrast(1.08) grayscale(.08)!important}
-.lookbook-text{padding:clamp(42px,6vw,96px)!important;background:linear-gradient(135deg,#11161c,#080a0d 76%)!important}
-.lookbook-text h2{font-size:clamp(48px,5.3vw,82px)!important;line-height:.90!important;margin:18px 0 26px!important;color:#e4e2de!important}
-.lookbook-text>p:not(.eyebrow){max-width:360px!important;color:#aab0b8!important;font-size:13px!important;line-height:1.75!important}
-.lookbook-strip{background:#07090b!important}
-.lookbook-strip button{background:#0d1115!important;border-color:rgba(255,255,255,.10)!important}
-.lookbook-strip img{filter:brightness(.82) contrast(1.04)!important}
+/* collection/shop */
+.shop{padding:0 1.1vw 104px!important;background:#07090b!important}.shop-banner{min-height:280px!important;margin-bottom:14px!important;background:linear-gradient(90deg,rgba(6,8,11,.68),rgba(6,8,11,.18) 40%,rgba(6,8,11,.18) 60%,rgba(6,8,11,.68)),url('https://grvezvaultofficial.us/vaultline-hero.jpg') center 62%/cover no-repeat!important;border:1px solid rgba(255,255,255,.09)!important}.shop-banner::after{background:linear-gradient(180deg,rgba(4,6,9,.02),rgba(4,6,9,.26) 58%,rgba(4,6,9,.72))!important}.shop-banner-fracture{opacity:.9!important;background:linear-gradient(transparent,rgba(182,58,80,.24),#b63a50 48%,rgba(182,58,80,.24),transparent)!important}.shop-banner h2{top:43%!important;font-family:var(--serif)!important;font-weight:500!important;font-size:clamp(42px,4.4vw,66px)!important;letter-spacing:.025em!important}.shop-banner-sub{top:34%!important;color:#bcc2c8!important}.shop-bar{padding:11px 4px 16px!important;border-bottom:1px solid rgba(255,255,255,.08)!important}.product-grid{gap:18px!important}.p-card-img{background:linear-gradient(180deg,#171b20,#0d1014)!important;border-color:rgba(255,255,255,.09)!important}.p-card-img img{padding:5%!important;filter:brightness(.94) contrast(1.03)!important}.p-card-name{font-size:18px!important;font-weight:500!important;letter-spacing:.02em!important}.p-card-price{color:#c0c5cb!important}
 
-/* BRAND SECTION — left editorial copy, right industrial fracture panel */
-.brand{
-  padding:0!important;
-  background:#07090b!important;
-  border-top:1px solid rgba(255,255,255,.10)!important;
-}
-.brand-inner{
-  min-height:520px!important;
-  display:grid!important;
-  grid-template-columns:1fr 1fr!important;
-  align-items:stretch!important;
-}
-.brand-copy{
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-  padding:clamp(54px,7vw,110px)!important;
-  background:linear-gradient(145deg,#0b0e12,#07090b 76%)!important;
-}
-.brand-mark{font-size:clamp(52px,5.6vw,88px)!important;line-height:.95!important;letter-spacing:.09em!important;color:#dedbd6!important}
-.brand-mark span{margin-top:10px!important;font-size:8px!important;letter-spacing:.36em!important;color:#9ca3ab!important}
-.brand-copy>p:not(.eyebrow){max-width:450px!important;margin:28px 0 30px!important;color:#aeb4ba!important;line-height:1.75!important}
-.brand-symbol{
-  position:relative!important;
-  display:grid!important;
-  place-items:center!important;
-  min-height:520px!important;
-  background:
-    linear-gradient(90deg,rgba(7,9,11,.20),rgba(7,9,11,.66)),
-    url('https://grvezvaultofficial.us/vaultline-hero.jpg') center/cover no-repeat!important;
-  overflow:hidden!important;
-}
-.brand-symbol::before{
-  content:"";position:absolute;top:0;bottom:0;left:49.8%;width:2px;
-  background:linear-gradient(transparent 4%,rgba(182,58,80,.32),#b63a50 50%,rgba(182,58,80,.32),transparent 96%);
-  box-shadow:0 0 22px rgba(182,58,80,.26);
-}
-.brand-symbol svg{width:190px!important;height:190px!important;opacity:.34!important;filter:drop-shadow(0 0 16px rgba(0,0,0,.65))!important}
-.brand-values{
-  display:grid!important;
-  grid-template-columns:repeat(4,1fr)!important;
-  padding:0!important;
-  border-top:1px solid rgba(255,255,255,.10)!important;
-  background:#080a0d!important;
-}
-.brand-values .bv{min-height:110px!important;display:grid!important;place-items:center!important;text-align:center!important;border-right:1px solid rgba(255,255,255,.08)!important;font-size:9px!important;letter-spacing:.18em!important;color:#aeb4bb!important}
-.brand-values .bv:last-child{border-right:0!important}
+/* lookbook */
+.lookbook{grid-template-columns:1.08fr .92fr!important;grid-template-rows:minmax(540px,66vh) auto!important;background:#080a0d!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}.lookbook-photo{background:linear-gradient(135deg,#12161b,#080a0d)!important}.lookbook-main img{width:100%!important;height:100%!important;object-fit:contain!important;padding:3%!important;filter:brightness(.84) contrast(1.05)!important}.lookbook-text{padding:clamp(44px,6vw,92px)!important;background:linear-gradient(140deg,#11161c,#080a0d 78%)!important}.lookbook-text h2{font-family:var(--serif)!important;font-weight:500!important;font-size:clamp(50px,5vw,78px)!important;line-height:.88!important;margin:18px 0 26px!important;letter-spacing:.015em!important}.lookbook-text>p:not(.eyebrow){max-width:360px!important;color:#aab0b8!important;font-size:13px!important;line-height:1.75!important}.lookbook-strip{background:#07090b!important}.lookbook-strip button{background:#0d1115!important;border-color:rgba(255,255,255,.09)!important}.lookbook-strip img{filter:brightness(.85) contrast(1.03)!important}
 
-/* STORY / SUPPORT / LEGAL — same cinematic language */
-.story-hero{
-  background:
-    linear-gradient(90deg,rgba(5,7,9,.72),rgba(5,7,9,.20) 48%,rgba(5,7,9,.70)),
-    url('https://grvezvaultofficial.us/vaultline-hero.jpg') center/cover no-repeat!important;
-}
-.story-hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 49.94%,rgba(182,58,80,.25) 50%,transparent 50.06%);opacity:.78}
-.story-hero::after{background:linear-gradient(180deg,rgba(4,6,9,.02),rgba(4,6,9,.22) 58%,rgba(4,6,9,.84))!important}
-.story-body,.support,.ft{background:#07090b!important}
-.collection-empty{min-height:260px!important;border:1px solid rgba(182,58,80,.18)!important;background:#0b0e12!important;color:#aeb6c1!important}
+/* brand */
+.brand{padding:0!important;background:#07090b!important;border-top:1px solid var(--line)!important}.brand-inner{min-height:500px!important;display:grid!important;grid-template-columns:1fr 1fr!important}.brand-copy{display:flex!important;flex-direction:column!important;justify-content:center!important;padding:clamp(52px,6vw,96px)!important;background:linear-gradient(145deg,#0b0e12,#07090b 78%)!important}.brand-mark{font-family:var(--serif)!important;font-weight:500!important;font-size:clamp(56px,5.2vw,84px)!important;line-height:.9!important;letter-spacing:.035em!important}.brand-mark span{font-family:var(--sans)!important;margin-top:10px!important;font-size:8px!important;letter-spacing:.34em!important;color:#9ca3ab!important}.brand-copy>p:not(.eyebrow){max-width:430px!important;margin:26px 0 30px!important;color:#aeb4ba!important;line-height:1.72!important}.brand-symbol{position:relative!important;display:grid!important;place-items:center!important;min-height:500px!important;background:linear-gradient(90deg,rgba(7,9,11,.24),rgba(7,9,11,.66)),url('https://grvezvaultofficial.us/vaultline-hero.jpg') center 62%/cover no-repeat!important;overflow:hidden!important}.brand-symbol::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:linear-gradient(transparent,rgba(182,58,80,.28),#b63a50 50%,rgba(182,58,80,.28),transparent);box-shadow:0 0 22px rgba(182,58,80,.24)}.brand-symbol svg{width:170px!important;height:170px!important;opacity:.30!important}.brand-values{display:grid!important;grid-template-columns:repeat(4,1fr)!important;padding:0!important;border-top:1px solid rgba(255,255,255,.09)!important;background:#080a0d!important}.brand-values .bv{min-height:104px!important;display:grid!important;place-items:center!important;text-align:center!important;border-right:1px solid rgba(255,255,255,.08)!important;font-size:9px!important;letter-spacing:.18em!important;color:#abb2ba!important}
 
-/* MOBILE — preserve the same visual identity instead of collapsing into generic cards */
-@media(max-width:900px){
-  .hero{height:700px!important;min-height:700px!important}
-  .hero-center{right:6vw!important;width:48vw!important}
-  .vault-paths{grid-template-columns:repeat(2,1fr)!important}
-  .vault-paths a:last-child{grid-column:1/-1!important}
-  .brand-inner{grid-template-columns:1fr!important}
-  .brand-symbol{min-height:360px!important}
-}
+.story-hero{background:linear-gradient(90deg,rgba(5,7,9,.68),rgba(5,7,9,.16) 48%,rgba(5,7,9,.68)),url('https://grvezvaultofficial.us/vaultline-hero.jpg') center 62%/cover no-repeat!important}.story-body,.support,.ft{background:#07090b!important}.collection-empty{min-height:260px!important;border:1px solid rgba(182,58,80,.18)!important;background:#0b0e12!important;color:#aeb6c1!important}
 
-@media(max-width:680px){
-  body{background-attachment:scroll!important}
-  .hdr{padding:0 16px!important}
-  .hero{height:690px!important;min-height:690px!important}
-  .hero-art{background-position:center,48% center!important;filter:grayscale(.12) saturate(.70) contrast(1.10) brightness(.62)!important}
-  .hero-verse{left:18px!important;top:18%!important;font-size:8px!important}
-  .hero-center{left:50%!important;right:auto!important;top:47%!important;width:82%!important;transform:translate(-50%,-42%)!important;text-align:center!important}
-  .hero h1{font-size:clamp(48px,15vw,68px)!important;line-height:.90!important}
-  .hero .btn-ghost{margin-inline:auto!important}
-  .hero-bottom{left:18px!important;right:18px!important}
-  .hero-wordmark{display:none!important}
-  .vault-paths{grid-template-columns:1fr!important;padding:12px 14px 54px!important}
-  .vault-paths a,.vault-paths a:last-child{grid-column:auto!important;min-height:110px!important}
-  .collections,.shop{padding-left:14px!important;padding-right:14px!important}
-  .col-grid{grid-template-columns:1fr!important}
-  .col-card{min-height:270px!important}
-  .product-grid{grid-template-columns:1fr 1fr!important;gap:12px!important}
-  .lookbook{grid-template-columns:1fr!important;grid-template-rows:auto!important}
-  .lookbook-photo{min-height:440px!important}
-  .lookbook-text{padding:46px 24px!important}
-  .lookbook-strip{grid-template-columns:repeat(2,1fr)!important}
-  .brand-copy{padding:54px 24px!important}
-  .brand-symbol{min-height:300px!important}
-  .brand-values{grid-template-columns:1fr 1fr!important}
-  .brand-values .bv{min-height:96px!important}
-}
+@media(max-width:900px){.hero-center{right:5vw!important;width:46vw!important}.vault-paths{grid-template-columns:repeat(2,1fr)!important}.vault-paths a:last-child{grid-column:1/-1!important}.brand-inner{grid-template-columns:1fr!important}.brand-symbol{min-height:340px!important}}
+@media(max-width:680px){.hdr{padding:0 16px!important}.hero{height:680px!important;min-height:680px!important}.hero-art{background-position:center 60%!important}.hero-verse{left:18px!important;top:17%!important;font-size:8px!important}.hero-center{left:50%!important;right:auto!important;top:48%!important;width:82%!important;transform:translate(-50%,-42%)!important;text-align:center!important}.hero h1{font-size:clamp(46px,13vw,62px)!important;line-height:.9!important}.hero .btn-ghost{margin-inline:auto!important}.hero-bottom{left:18px!important;right:18px!important}.hero-wordmark{display:none!important}.vault-paths{grid-template-columns:1fr!important;padding:12px 14px 54px!important}.vault-paths a,.vault-paths a:last-child{grid-column:auto!important;min-height:112px!important}.collections,.shop{padding-left:14px!important;padding-right:14px!important}.col-grid{grid-template-columns:1fr!important}.col-card{min-height:280px!important}.product-grid{grid-template-columns:1fr 1fr!important;gap:12px!important}.lookbook{grid-template-columns:1fr!important;grid-template-rows:auto!important}.lookbook-photo{min-height:430px!important}.lookbook-text{padding:44px 24px!important}.lookbook-strip{grid-template-columns:repeat(2,1fr)!important}.brand-copy{padding:52px 24px!important}.brand-values{grid-template-columns:1fr 1fr!important}}

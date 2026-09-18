@@ -61,3 +61,23 @@ a:focus-visible,button:focus-visible{
   .hdr-brand{font-size:17px!important}
   .hdr-brand span{font-size:4.5px!important}
 }
+
+
+/* Hard lock for header byline */
+.hdr-brand .hdr-byline{
+  display:block!important;
+  width:auto!important;
+  margin-top:4px!important;
+  font-family:var(--display)!important;
+  font-size:7px!important;
+  line-height:1!important;
+  font-style:italic!important;
+  font-weight:400!important;
+  letter-spacing:.08em!important;
+  text-align:center!important;
+  opacity:.72!important;
+  transform:none!important;
+}
+@media(max-width:680px){
+  .hdr-brand .hdr-byline{font-size:6px!important}
+}

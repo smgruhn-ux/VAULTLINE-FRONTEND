@@ -8,3 +8,34 @@
 .lookbook{grid-template-columns:1.13fr .87fr!important;background:#080a0d!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}.lookbook-main{width:100%!important;height:100%!important;background-image:url('/assets/generated-shirt.svg')!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}.lookbook-main img,.lookbook-strip img{opacity:0!important;visibility:hidden!important}.lookbook-strip button{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}.lookbook-strip button:nth-child(1){background-image:url('/assets/generated-omega.svg')!important}.lookbook-strip button:nth-child(2){background-image:url('/assets/generated-grave.svg')!important}.lookbook-strip button:nth-child(3){background-image:url('/assets/generated-current.svg')!important}.lookbook-strip button:nth-child(4){background-image:url('/assets/generated-liberty.svg')!important}.lookbook-text{padding:clamp(48px,6vw,96px)!important;background:linear-gradient(135deg,#11161b,#080a0d 78%)!important}.lookbook-text h2{font-family:var(--display)!important;font-size:clamp(46px,4.9vw,74px)!important;line-height:.92!important}
 .brand{padding:0!important;background:#07090b!important;border-top:1px solid var(--line)!important}.brand-inner{min-height:500px!important;display:grid!important;grid-template-columns:.9fr 1.1fr!important}.brand-copy{padding:clamp(52px,6vw,94px)!important;background:linear-gradient(145deg,#0b0e12,#07090b 76%)!important}.brand-symbol{min-height:500px!important;background-image:url('/assets/generated-grave.svg')!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}.brand-symbol::before,.brand-symbol::after,.brand-symbol svg{display:none!important}.brand-values{display:grid!important;grid-template-columns:repeat(4,1fr)!important;background:#080a0d!important}.pd-atc{background:var(--cr)!important;color:#fff!important}.story-hero{background-image:linear-gradient(90deg,rgba(4,6,8,.58),rgba(4,6,8,.10) 52%,rgba(4,6,8,.58)),url('/assets/generated-current.svg')!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}.story-body,.support,.ft{background:#07090b!important;background-image:none!important}.collection-empty{min-height:260px!important;border:1px solid rgba(182,58,80,.18)!important;background:#0b0e12!important;color:#aeb6c1!important}
 @media(max-width:900px){.hero{min-height:0!important;aspect-ratio:16/9!important}.col-grid{grid-template-columns:repeat(2,1fr)!important}.brand-inner{grid-template-columns:1fr!important}.brand-symbol{min-height:330px!important}}@media(max-width:680px){.hdr{height:56px!important;padding:0 15px!important}.hero{height:auto!important;min-height:0!important;aspect-ratio:16/9!important}.hero-art{background-position:center!important;background-size:cover!important}.collections,.shop{padding-left:14px!important;padding-right:14px!important}.col-grid{grid-template-columns:1fr!important}.col-card{min-height:270px!important}.lookbook{grid-template-columns:1fr!important}.brand-copy{padding:50px 24px!important}.brand-values{grid-template-columns:repeat(2,1fr)!important}}
+
+
+/* 2026-09-18 storefront polish */
+.hdr-brand{
+  display:inline-flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:148px!important;
+  text-align:center!important;
+}
+.hdr-brand span{
+  width:100%!important;
+  margin-top:5px!important;
+  font-family:var(--display)!important;
+  font-size:6px!important;
+  font-style:italic!important;
+  font-weight:400!important;
+  letter-spacing:.13em!important;
+  line-height:1!important;
+  text-align:center!important;
+  color:#9298a0!important;
+}
+a:focus-visible,button:focus-visible{
+  outline:1px solid #e2dfda!important;
+  outline-offset:4px!important;
+}
+@media(max-width:680px){
+  .hdr-brand{min-width:124px!important;font-size:17px!important}
+  .hdr-brand span{font-size:5.5px!important;letter-spacing:.11em!important}
+}

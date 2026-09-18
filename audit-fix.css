@@ -39,3 +39,25 @@ a:focus-visible,button:focus-visible{
   .hdr-brand{min-width:124px!important;font-size:17px!important}
   .hdr-brand span{font-size:5.5px!important;letter-spacing:.11em!important}
 }
+
+
+/* 2026-09-18 brand lockup correction */
+.hdr-brand{
+  font-size:20px!important;
+  line-height:.92!important;
+  letter-spacing:.09em!important;
+}
+.hdr-brand span{
+  margin-top:5px!important;
+  font-family:var(--display)!important;
+  font-size:5px!important;
+  line-height:1!important;
+  font-style:italic!important;
+  font-weight:400!important;
+  letter-spacing:.10em!important;
+  opacity:.78!important;
+}
+@media(max-width:680px){
+  .hdr-brand{font-size:17px!important}
+  .hdr-brand span{font-size:4.5px!important}
+}

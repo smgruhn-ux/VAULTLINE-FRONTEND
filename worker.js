@@ -71,16 +71,45 @@ async function storefrontProducts(collectionSlug, token) {
   const safe = String(collectionSlug || '').trim();
   if (!/^[a-z0-9-]+$/i.test(safe)) return json({ error: 'Invalid collection slug' }, 400);
   try {
-    const target = new URL(`${API_BASE}/collections/${encodeURIComponent(safe)}/products`);
-    target.searchParams.set('currency', 'USD');
-    target.searchParams.set('limit', '100');
-    const result = await fourthwallFetch(target.toString(), token, {
-      method: 'GET',
-      headers: { Accept: 'application/json' }
-    });
-    if (result.error) return result.error;
-    const payload = JSON.parse(result.text || '{}');
-    return json({ collection: safe, products: (payload.results || []).map(mapProduct) });
+    const products = [];
+    const seen = new Set();
+    let page = 0;
+    let hasNextPage = true;
+    const pageSize = 100;
+
+    while (hasNextPage && page < 100) {
+      const target = new URL(`${API_BASE}/collections/${encodeURIComponent(safe)}/products`);
+      target.searchParams.set('currency', 'USD');
+      target.searchParams.set('page', String(page));
+      target.searchParams.set('size', String(pageSize));
+
+      const result = await fourthwallFetch(target.toString(), token, {
+        method: 'GET',
+        headers: { Accept: 'application/json' }
+      });
+      if (result.error) return result.error;
+
+      const payload = JSON.parse(result.text || '{}');
+      const pageProducts = Array.isArray(payload) ? payload : (payload.results || payload.products || []);
+      for (const product of pageProducts) {
+        if (!product?.id || seen.has(product.id)) continue;
+        seen.add(product.id);
+        products.push(mapProduct(product));
+      }
+
+      const paging = payload?.paging;
+      if (!paging) {
+        hasNextPage = false;
+      } else {
+        hasNextPage = Boolean(
+          paging.hasNextPage ??
+          (Number(paging.pageNumber ?? page) + 1 < Number(paging.totalPages ?? 0))
+        );
+        page = Number(paging.pageNumber ?? page) + 1;
+      }
+    }
+
+    return json({ collection: safe, products });
   } catch (error) {
     return json({ error: `Fourthwall catalog request failed: ${error?.message || 'unknown network error'}` }, 502);
   }

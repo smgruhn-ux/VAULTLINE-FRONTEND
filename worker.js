@@ -129,7 +129,7 @@ export default {
     const url = new URL(request.url);
     const token = String(env.FOURTHWALL_STOREFRONT_TOKEN || '').trim();
 
-    if (url.pathname === '/') return serveAssetRoot(request, env);
+    if (url.pathname === '/' || /^\/products\/[^/]+\/?$/.test(url.pathname)) return serveAssetRoot(request, env);
 
     if (url.pathname === '/api/storefront/products') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);

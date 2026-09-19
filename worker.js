@@ -1,4 +1,5 @@
 const API_BASE = 'https://storefront-api.fourthwall.com/v1';
+const FOURTHWALL_SITE = 'https://vaultlineofficial-shop.fourthwall.com';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -115,6 +116,23 @@ async function storefrontProducts(collectionSlug, token) {
   }
 }
 
+async function serveAssetOrFourthwall(request, env) {
+  const assetResponse = await env.ASSETS.fetch(request);
+  if (assetResponse.status !== 404) return assetResponse;
+
+  const method = request.method.toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') return assetResponse;
+
+  // Fourthwall still uses vaultlineofficial.us as the shop's primary domain
+  // for customer-system links (order management, contact, tracking, etc.).
+  // Those routes do not exist in this custom frontend, so hand only missing
+  // routes back to the shop's internal Fourthwall domain while preserving
+  // the full path and signed query string.
+  const incoming = new URL(request.url);
+  const target = new URL(incoming.pathname + incoming.search, FOURTHWALL_SITE);
+  return Response.redirect(target.toString(), 302);
+}
+
 async function serveAssetRoot(request, env) {
   const assetRequest = new Request(new URL('/index.html', request.url), request);
   const response = await env.ASSETS.fetch(assetRequest);
@@ -145,7 +163,7 @@ export default {
     }
 
     const target = cartTarget(url.pathname);
-    if (!target) return env.ASSETS.fetch(request);
+    if (!target) return serveAssetOrFourthwall(request, env);
     if (!token) return json({ error: 'Fourthwall Storefront token is not configured on this Worker.' }, 503);
 
     const method = request.method.toUpperCase();

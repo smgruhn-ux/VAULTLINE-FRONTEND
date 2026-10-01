@@ -1,5 +1,8 @@
 const API_BASE = 'https://storefront-api.fourthwall.com/v1';
 const FOURTHWALL_SITE = 'https://vaultlineofficial-shop.fourthwall.com';
+const YOYCOL_BASE = 'https://www.yoycol.com';
+const YOYCOL_V4 = '/api/2025/open/v4';
+const YOYCOL_OK = '100000';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -66,6 +69,167 @@ async function fourthwallFetch(target, token, init = {}) {
     return { error: json({ error: String(message), status: response.status }, response.status) };
   }
   return { response, text };
+}
+
+function bytesToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function randomHex(byteLength = 16) {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function cleanYoycolParams(params = {}) {
+  return Object.fromEntries(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => [String(key), String(value)])
+      .sort(([a], [b]) => a.localeCompare(b))
+  );
+}
+
+async function yoycolSignature(secretKey, signatureData) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  return bytesToBase64(await crypto.subtle.sign('HMAC', key, encoder.encode(signatureData)));
+}
+
+async function yoycolGet(path, env, params = {}) {
+  const accessKey = String(env.YOYCOL_ACCESS_KEY || '').trim();
+  const secretKey = String(env.YOYCOL_SECRET_KEY || '').trim();
+  if (!accessKey || !secretKey) {
+    return { error: json({ error: 'Yoycol API credentials are not configured on this Worker.' }, 503) };
+  }
+
+  const safePath = String(path || '');
+  if (!safePath.startsWith('/') || safePath.includes('..')) {
+    return { error: json({ error: 'Invalid Yoycol API path.' }, 400) };
+  }
+
+  const fullPath = YOYCOL_V4 + safePath;
+  const timestamp = String(Date.now());
+  const nonce = randomHex(16);
+  const algorithm = 'HmacSHA256';
+  const version = '4.0';
+  const sortedParams = cleanYoycolParams(params);
+  const paramString = Object.entries(sortedParams)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  const signatureLines = [
+    'method=GET',
+    `path=${fullPath}`,
+    `timestamp=${timestamp}`,
+    `nonce=${nonce}`,
+    `accessKey=${accessKey}`,
+    `algorithm=${algorithm}`,
+    `version=${version}`
+  ];
+  if (paramString) signatureLines.push(`params=${paramString}`);
+
+  const signature = await yoycolSignature(secretKey, signatureLines.join('\n'));
+  const upstream = new URL(fullPath, YOYCOL_BASE);
+  for (const [key, value] of Object.entries(sortedParams)) upstream.searchParams.set(key, value);
+
+  try {
+    const response = await fetch(upstream.toString(), {
+      method: 'GET',
+      headers: {
+        'X-API-Access-Key': accessKey,
+        'X-API-Timestamp': timestamp,
+        'X-API-Nonce': nonce,
+        'X-API-Algorithm': algorithm,
+        'X-API-Version': version,
+        'X-API-Signature': signature,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const text = await response.text();
+    let payload = {};
+    try {
+      payload = text ? JSON.parse(text) : {};
+    } catch {
+      return { error: json({ error: `Yoycol returned a non-JSON response (${response.status}).` }, 502) };
+    }
+
+    if (!response.ok) {
+      return {
+        error: json({
+          error: payload?.msg || payload?.message || `Yoycol request failed (${response.status}).`,
+          upstreamStatus: response.status
+        }, 502)
+      };
+    }
+
+    if (String(payload?.code || '') !== YOYCOL_OK) {
+      return {
+        error: json({
+          error: payload?.msg || payload?.message || 'Yoycol rejected the API request.',
+          code: payload?.code || null
+        }, 502)
+      };
+    }
+
+    return { payload };
+  } catch (error) {
+    return { error: json({ error: `Yoycol request failed: ${error?.message || 'unknown network error'}` }, 502) };
+  }
+}
+
+function yoycolPaging(url, defaultSize = 20) {
+  const page = Math.max(1, Math.min(10000, Number.parseInt(url.searchParams.get('page') || '1', 10) || 1));
+  const size = Math.max(1, Math.min(50, Number.parseInt(url.searchParams.get('size') || String(defaultSize), 10) || defaultSize));
+  return { page, size };
+}
+
+async function yoycolStatus(env) {
+  const result = await yoycolGet('/catalog/products', env, { page: 1, size: 1 });
+  if (result.error) return result.error;
+  return json({
+    connected: true,
+    provider: 'Yoycol',
+    apiVersion: '4.0',
+    credentials: 'configured'
+  });
+}
+
+async function yoycolCatalog(url, env) {
+  const { page, size } = yoycolPaging(url, 20);
+  const query = String(url.searchParams.get('query') || '').trim().slice(0, 120);
+  const params = { page, size };
+  if (query) params.query = query;
+  const result = await yoycolGet('/catalog/products', env, params);
+  if (result.error) return result.error;
+  return json(result.payload);
+}
+
+async function yoycolTemplates(url, env) {
+  const { page, size } = yoycolPaging(url, 20);
+  const result = await yoycolGet('/product_templates', env, { page, size });
+  if (result.error) return result.error;
+  return json(result.payload);
+}
+
+async function yoycolVariants(productId, url, env) {
+  const safeId = String(productId || '').trim();
+  if (!/^[A-Za-z0-9_-]+$/.test(safeId)) return json({ error: 'Invalid Yoycol product ID.' }, 400);
+  const { page, size } = yoycolPaging(url, 50);
+  const result = await yoycolGet(`/catalog/products/${safeId}/variants`, env, { page, size });
+  if (result.error) return result.error;
+  return json(result.payload);
 }
 
 async function storefrontProducts(collectionSlug, token) {
@@ -148,6 +312,27 @@ export default {
     const token = String(env.FOURTHWALL_STOREFRONT_TOKEN || '').trim();
 
     if (url.pathname === '/' || url.pathname === '/shop' || url.pathname === '/collections' || url.pathname === '/lookbook' || /^\/collections\/[a-z0-9-]+\/?$/i.test(url.pathname) || /^\/products\/[^/]+\/?$/.test(url.pathname)) return serveAssetRoot(request, env);
+
+    if (url.pathname === '/api/yoycol/status') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolStatus(env);
+    }
+
+    if (url.pathname === '/api/yoycol/catalog') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolCatalog(url, env);
+    }
+
+    if (url.pathname === '/api/yoycol/templates') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolTemplates(url, env);
+    }
+
+    const yoycolVariantMatch = url.pathname.match(/^\/api\/yoycol\/catalog\/([A-Za-z0-9_-]+)\/variants$/);
+    if (yoycolVariantMatch) {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolVariants(yoycolVariantMatch[1], url, env);
+    }
 
     if (url.pathname === '/api/storefront/products') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);

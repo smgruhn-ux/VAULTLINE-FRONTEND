@@ -1,13 +1,12 @@
 const CART_KEY='vaultline_yoycol_cart_v1';
 const lines=document.querySelector('#cart-lines');
 const totalEl=document.querySelector('#cart-total');
-const squareBtn=document.querySelector('#square-pay');
 const paypalWrap=document.querySelector('#paypal-wrap');
 const errorEl=document.querySelector('#checkout-error');
 const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0);
 function cart(){try{const c=JSON.parse(localStorage.getItem(CART_KEY)||'[]');return Array.isArray(c)?c:[]}catch{return[]}}
 function save(c){localStorage.setItem(CART_KEY,JSON.stringify(c));render()}
-function render(){const c=cart();let total=0;if(!c.length){lines.innerHTML='<p>Your Yoycol cart is empty.</p>';totalEl.textContent='$0.00';squareBtn.disabled=true;paypalWrap.innerHTML='';return}
+function render(){const c=cart();let total=0;if(!c.length){lines.innerHTML='<p>Your Yoycol cart is empty.</p>';totalEl.textContent='$0.00';paypalWrap.innerHTML='';return}
 lines.innerHTML=c.map((item,i)=>{const q=Math.max(1,Number(item.quantity)||1);total+=Number(item.price||0)*q;return `<article class="v-line"><img src="${item.image||''}" alt=""><div><div class="v-name">${item.name||'Vaultline piece'}</div><div class="v-meta">${money(item.price)} each</div><button data-remove="${i}" style="margin-top:8px;background:none;border:0;color:#9da3ad;text-decoration:underline;cursor:pointer">Remove</button></div><div class="v-qty"><button data-minus="${i}">−</button><span>${q}</span><button data-plus="${i}">+</button></div></article>`}).join('');
 totalEl.textContent=money(total);
 }
@@ -15,5 +14,5 @@ lines.addEventListener('click',e=>{const c=cart();const plus=e.target.dataset.pl
 function payload(){return{items:cart().map(x=>({providerId:x.providerId,variantId:x.variantId,quantity:x.quantity}))}}
 async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Checkout request failed.');return data}
 async function loadPaypal(clientId){if(!clientId)return;const s=document.createElement('script');s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&currency=USD&intent=capture&components=buttons';s.onload=()=>{if(!window.paypal)return;paypal.Buttons({style:{layout:'vertical',shape:'rect',label:'paypal'},createOrder:async()=>{errorEl.textContent='';const d=await post('/api/payments/paypal/create-order',payload());return d.id},onApprove:async data=>{const result=await post('/api/payments/paypal/capture-order',{orderId:data.orderID});if(result.paid){localStorage.removeItem(CART_KEY);location.href='/order-received.html?provider=paypal&order='+encodeURIComponent(result.orderId)}},onError:err=>{console.error(err);errorEl.textContent='PayPal checkout failed. Please try another payment method.'}}).render('#paypal-wrap')};document.head.appendChild(s)}
-async function init(){render();try{const r=await fetch('/api/payments/config',{headers:{Accept:'application/json'}});const cfg=await r.json();squareBtn.disabled=!cfg.square||!cart().length;if(cfg.square){squareBtn.addEventListener('click',async()=>{squareBtn.disabled=true;errorEl.textContent='';try{const d=await post('/api/payments/square/create-link',payload());location.href=d.url}catch(e){errorEl.textContent=e.message;squareBtn.disabled=false}})}if(cfg.paypal)loadPaypal(cfg.paypalClientId);if(!cfg.square&&!cfg.paypal)errorEl.textContent='Checkout is connected, but payment credentials still need to be added before orders can be accepted.'}catch(e){errorEl.textContent='Payment configuration could not be loaded.'}}
+async function init(){render();try{const r=await fetch('/api/payments/config',{headers:{Accept:'application/json'}});const cfg=await r.json();if(cfg.paypal)loadPaypal(cfg.paypalClientId);if(!cfg.paypal)errorEl.textContent='Checkout is connected, but PayPal live credentials still need to be added before orders can be accepted.'}catch(e){errorEl.textContent='Payment configuration could not be loaded.'}}
 init();

@@ -405,7 +405,6 @@ function paymentConfig(env) {
   const paypalClientId = String(env.PAYPAL_CLIENT_ID || '').trim();
   return {
     fulfillmentMode: 'manual_after_settlement',
-    square: Boolean(String(env.SQUARE_ACCESS_TOKEN || '').trim() && String(env.SQUARE_LOCATION_ID || '').trim()),
     paypal: Boolean(paypalClientId && String(env.PAYPAL_CLIENT_SECRET || '').trim()),
     paypalClientId: paypalClientId || null,
     paypalMode: String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live'
@@ -505,63 +504,6 @@ async function paypalCaptureOrder(request, env) {
     orderId: payload?.id || orderId,
     fulfillmentStatus: paid ? 'PAID_AWAITING_MANUAL_PRODUCTION' : 'PAYMENT_NOT_COMPLETED'
   }, paid ? 200 : 409);
-}
-
-async function squareCreatePaymentLink(request, env) {
-  const accessToken = String(env.SQUARE_ACCESS_TOKEN || '').trim();
-  const locationId = String(env.SQUARE_LOCATION_ID || '').trim();
-  if (!accessToken || !locationId) return json({ error: 'Square is not configured.' }, 503);
-
-  const body = await readJsonBody(request);
-  const checkout = await resolveYoycolCheckout(body?.items, env);
-  if (checkout.error) return checkout.error;
-
-  const lineItems = checkout.items.map((item) => {
-    const detail = [
-      item.attributes?.color?.name,
-      item.attributes?.size?.name
-    ].filter(Boolean).join(' / ');
-    return {
-      name: item.name.slice(0, 255),
-      quantity: String(item.quantity),
-      note: ('Yoycol ' + item.providerId + (detail ? ' — ' + detail : '')).slice(0, 500),
-      base_price_money: {
-        amount: Math.round(item.unitPrice * 100),
-        currency: 'USD'
-      }
-    };
-  });
-
-  const response = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + accessToken,
-      'Square-Version': '2026-09-16',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      idempotency_key: crypto.randomUUID(),
-      description: 'Vaultline Yoycol order — hold for manual production after settlement',
-      order: {
-        location_id: locationId,
-        line_items: lineItems
-      },
-      checkout_options: {
-        ask_for_shipping_address: true,
-        redirect_url: 'https://vaultlineofficial.us/order-received.html?provider=square'
-      },
-      payment_note: 'VAULTLINE YOYCOL — PAID / AWAITING MANUAL PRODUCTION'
-    })
-  });
-  const payload = await response.json().catch(() => ({}));
-  const url = payload?.payment_link?.url || payload?.payment_link?.long_url;
-  if (!response.ok || !url) return json({ error: payload?.errors?.[0]?.detail || 'Square checkout creation failed.' }, 502);
-  return json({
-    url,
-    orderId: payload?.payment_link?.order_id || null,
-    total: checkout.total,
-    currency: checkout.currency
-  });
 }
 
 async function storefrontProducts(collectionSlug, token) {
@@ -670,10 +612,6 @@ export default {
       return paypalCaptureOrder(request, env);
     }
 
-    if (url.pathname === '/api/payments/square/create-link') {
-      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-      return squareCreatePaymentLink(request, env);
-    }
 
     if (url.pathname === '/api/storefront/products') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);

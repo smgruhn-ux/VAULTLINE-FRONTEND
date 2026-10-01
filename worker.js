@@ -273,19 +273,28 @@ function mapYoycolTemplate(template = {}) {
     rawVariants[0]?.retailPrice, rawVariants[0]?.retail_price, rawVariants[0]?.price
   );
 
-  const variants = rawVariants.slice(0, 100).map((variant, index) => ({
+  let variants = rawVariants.slice(0, 100).map((variant, index) => ({
     id: 'yoycol:' + rawId + ':' + yoycolString(variant.id, variant.variantId, variant.variant_id, variant.sku, index),
     unitPrice: { value: yoycolNumber(variant.retailPrice, variant.retail_price, variant.price, price), currency: 'USD' },
     attributes: yoycolVariantAttributes(variant),
     images: yoycolImageUrls(variant).slice(0, 4).map((url) => ({ url })),
     provider: 'yoycol'
   }));
+  if (!variants.length && price > 0) {
+    variants = [{
+      id: 'yoycol:' + rawId + ':default',
+      unitPrice: { value: price, currency: 'USD' },
+      attributes: {},
+      images: images.slice(0, 4).map((url) => ({ url })),
+      provider: 'yoycol'
+    }];
+  }
 
   return {
     id: 'yoycol:' + rawId,
     provider: 'yoycol',
     providerId: rawId,
-    purchasable: false,
+    purchasable: price > 0 && variants.length > 0,
     name: yoycolString(template.name, template.title, template.templateName, template.template_name, template.productName, template.product_name) || 'Vaultline Yoycol piece',
     slug: ('yoycol-' + rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
     description: yoycolString(template.description, template.desc, template.productDescription, template.product_description),
@@ -319,8 +328,239 @@ async function yoycolStorefrontProducts(url, env) {
 
   return json({
     provider: 'yoycol',
-    previewOnly: true,
+    previewOnly: false,
     products
+  });
+}
+
+
+function safeQuantity(value) {
+  return Math.max(1, Math.min(10, Number.parseInt(String(value || '1'), 10) || 1));
+}
+
+async function readJsonBody(request) {
+  try {
+    return await request.json();
+  } catch {
+    return null;
+  }
+}
+
+async function loadYoycolTemplates(env) {
+  const products = [];
+  const seen = new Set();
+  const size = 50;
+  for (let page = 1; page <= 10; page += 1) {
+    const result = await yoycolGet('/product_templates', env, { page, size });
+    if (result.error) return result;
+    const rows = yoycolArray(result.payload);
+    for (const row of rows) {
+      const mapped = mapYoycolTemplate(row);
+      if (!mapped?.providerId || seen.has(mapped.providerId)) continue;
+      seen.add(mapped.providerId);
+      products.push(mapped);
+    }
+    if (rows.length < size) break;
+  }
+  return { products };
+}
+
+async function resolveYoycolCheckout(items, env) {
+  if (!Array.isArray(items) || !items.length || items.length > 20) {
+    return { error: json({ error: 'Your Yoycol cart is empty or invalid.' }, 400) };
+  }
+  const loaded = await loadYoycolTemplates(env);
+  if (loaded.error) return loaded;
+
+  const resolved = [];
+  for (const incoming of items) {
+    const providerId = yoycolString(incoming?.providerId);
+    const variantId = yoycolString(incoming?.variantId);
+    const quantity = safeQuantity(incoming?.quantity);
+    const product = loaded.products.find((p) => p.providerId === providerId);
+    if (!product || !product.purchasable) {
+      return { error: json({ error: 'One of the Yoycol products is no longer available for checkout.' }, 409) };
+    }
+    const variant = product.variants.find((v) => v.id === variantId) || product.variants[0];
+    const unit = Number(variant?.unitPrice?.value || product.price || 0);
+    if (!Number.isFinite(unit) || unit <= 0) {
+      return { error: json({ error: 'One of the Yoycol products does not have a valid retail price.' }, 409) };
+    }
+    resolved.push({
+      providerId,
+      variantId: variant.id,
+      name: product.name,
+      image: product.primaryImageUrl || '',
+      quantity,
+      unitPrice: Math.round(unit * 100) / 100,
+      currency: 'USD',
+      attributes: variant.attributes || {}
+    });
+  }
+  const total = Math.round(resolved.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) * 100) / 100;
+  return { items: resolved, total, currency: 'USD' };
+}
+
+function paymentConfig(env) {
+  const paypalClientId = String(env.PAYPAL_CLIENT_ID || '').trim();
+  return {
+    fulfillmentMode: 'manual_after_settlement',
+    square: Boolean(String(env.SQUARE_ACCESS_TOKEN || '').trim() && String(env.SQUARE_LOCATION_ID || '').trim()),
+    paypal: Boolean(paypalClientId && String(env.PAYPAL_CLIENT_SECRET || '').trim()),
+    paypalClientId: paypalClientId || null,
+    paypalMode: String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live'
+  };
+}
+
+async function paypalAccessToken(env) {
+  const clientId = String(env.PAYPAL_CLIENT_ID || '').trim();
+  const secret = String(env.PAYPAL_CLIENT_SECRET || '').trim();
+  if (!clientId || !secret) return { error: json({ error: 'PayPal is not configured.' }, 503) };
+  const mode = String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live';
+  const base = mode === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+  const credentials = btoa(clientId + ':' + secret);
+  const response = await fetch(base + '/v1/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + credentials,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.access_token) {
+    return { error: json({ error: 'PayPal authentication failed.' }, 502) };
+  }
+  return { token: payload.access_token, base };
+}
+
+async function paypalCreateOrder(request, env) {
+  const body = await readJsonBody(request);
+  const checkout = await resolveYoycolCheckout(body?.items, env);
+  if (checkout.error) return checkout.error;
+  const auth = await paypalAccessToken(env);
+  if (auth.error) return auth.error;
+
+  const itemTotal = checkout.total.toFixed(2);
+  const response = await fetch(auth.base + '/v2/checkout/orders', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + auth.token,
+      'Content-Type': 'application/json',
+      'PayPal-Request-Id': 'vaultline-' + randomHex(12)
+    },
+    body: JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        description: 'Vaultline by Gizzy Graves — Yoycol fulfillment',
+        custom_id: 'VAULTLINE-YOYCOL-HOLD',
+        amount: {
+          currency_code: 'USD',
+          value: itemTotal,
+          breakdown: { item_total: { currency_code: 'USD', value: itemTotal } }
+        },
+        items: checkout.items.map((item) => ({
+          name: item.name.slice(0, 120),
+          quantity: String(item.quantity),
+          unit_amount: { currency_code: 'USD', value: item.unitPrice.toFixed(2) },
+          category: 'PHYSICAL_GOODS',
+          sku: (item.providerId + ':' + item.variantId).slice(0, 127)
+        }))
+      }],
+      application_context: {
+        brand_name: 'Vaultline by Gizzy Graves',
+        shipping_preference: 'GET_FROM_FILE',
+        user_action: 'PAY_NOW',
+        return_url: 'https://vaultlineofficial.us/order-received.html?provider=paypal',
+        cancel_url: 'https://vaultlineofficial.us/yoycol-checkout.html?cancelled=1'
+      }
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.id) return json({ error: payload?.message || 'PayPal order creation failed.' }, 502);
+  return json({ id: payload.id, total: checkout.total, currency: checkout.currency });
+}
+
+async function paypalCaptureOrder(request, env) {
+  const body = await readJsonBody(request);
+  const orderId = yoycolString(body?.orderId);
+  if (!/^[A-Z0-9]+$/i.test(orderId)) return json({ error: 'Invalid PayPal order ID.' }, 400);
+  const auth = await paypalAccessToken(env);
+  if (auth.error) return auth.error;
+  const response = await fetch(auth.base + '/v2/checkout/orders/' + encodeURIComponent(orderId) + '/capture', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + auth.token,
+      'Content-Type': 'application/json',
+      'PayPal-Request-Id': 'vaultline-capture-' + orderId
+    },
+    body: '{}'
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) return json({ error: payload?.message || 'PayPal capture failed.' }, 502);
+  const paid = payload?.status === 'COMPLETED';
+  return json({
+    paid,
+    status: payload?.status || null,
+    orderId: payload?.id || orderId,
+    fulfillmentStatus: paid ? 'PAID_AWAITING_MANUAL_PRODUCTION' : 'PAYMENT_NOT_COMPLETED'
+  }, paid ? 200 : 409);
+}
+
+async function squareCreatePaymentLink(request, env) {
+  const accessToken = String(env.SQUARE_ACCESS_TOKEN || '').trim();
+  const locationId = String(env.SQUARE_LOCATION_ID || '').trim();
+  if (!accessToken || !locationId) return json({ error: 'Square is not configured.' }, 503);
+
+  const body = await readJsonBody(request);
+  const checkout = await resolveYoycolCheckout(body?.items, env);
+  if (checkout.error) return checkout.error;
+
+  const lineItems = checkout.items.map((item) => {
+    const detail = [
+      item.attributes?.color?.name,
+      item.attributes?.size?.name
+    ].filter(Boolean).join(' / ');
+    return {
+      name: item.name.slice(0, 255),
+      quantity: String(item.quantity),
+      note: ('Yoycol ' + item.providerId + (detail ? ' — ' + detail : '')).slice(0, 500),
+      base_price_money: {
+        amount: Math.round(item.unitPrice * 100),
+        currency: 'USD'
+      }
+    };
+  });
+
+  const response = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      'Square-Version': '2026-09-16',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(),
+      description: 'Vaultline Yoycol order — hold for manual production after settlement',
+      order: {
+        location_id: locationId,
+        line_items: lineItems
+      },
+      checkout_options: {
+        ask_for_shipping_address: true,
+        redirect_url: 'https://vaultlineofficial.us/order-received.html?provider=square'
+      },
+      payment_note: 'VAULTLINE YOYCOL — PAID / AWAITING MANUAL PRODUCTION'
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  const url = payload?.payment_link?.url || payload?.payment_link?.long_url;
+  if (!response.ok || !url) return json({ error: payload?.errors?.[0]?.detail || 'Square checkout creation failed.' }, 502);
+  return json({
+    url,
+    orderId: payload?.payment_link?.order_id || null,
+    total: checkout.total,
+    currency: checkout.currency
   });
 }
 
@@ -413,6 +653,26 @@ export default {
     if (url.pathname === '/api/yoycol/products') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
       return yoycolStorefrontProducts(url, env);
+    }
+
+    if (url.pathname === '/api/payments/config') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return json(paymentConfig(env));
+    }
+
+    if (url.pathname === '/api/payments/paypal/create-order') {
+      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+      return paypalCreateOrder(request, env);
+    }
+
+    if (url.pathname === '/api/payments/paypal/capture-order') {
+      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+      return paypalCaptureOrder(request, env);
+    }
+
+    if (url.pathname === '/api/payments/square/create-link') {
+      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+      return squareCreatePaymentLink(request, env);
     }
 
     if (url.pathname === '/api/storefront/products') {

@@ -189,12 +189,6 @@ async function yoycolGet(path, env, params = {}) {
   }
 }
 
-function yoycolPaging(url, defaultSize = 20) {
-  const page = Math.max(1, Math.min(10000, Number.parseInt(url.searchParams.get('page') || '1', 10) || 1));
-  const size = Math.max(1, Math.min(50, Number.parseInt(url.searchParams.get('size') || String(defaultSize), 10) || defaultSize));
-  return { page, size };
-}
-
 async function yoycolStatus(env) {
   const result = await yoycolGet('/catalog/products', env, { page: 1, size: 1 });
   if (result.error) return result.error;
@@ -204,32 +198,6 @@ async function yoycolStatus(env) {
     apiVersion: '4.0',
     credentials: 'configured'
   });
-}
-
-async function yoycolCatalog(url, env) {
-  const { page, size } = yoycolPaging(url, 20);
-  const query = String(url.searchParams.get('query') || '').trim().slice(0, 120);
-  const params = { page, size };
-  if (query) params.query = query;
-  const result = await yoycolGet('/catalog/products', env, params);
-  if (result.error) return result.error;
-  return json(result.payload);
-}
-
-async function yoycolTemplates(url, env) {
-  const { page, size } = yoycolPaging(url, 20);
-  const result = await yoycolGet('/product_templates', env, { page, size });
-  if (result.error) return result.error;
-  return json(result.payload);
-}
-
-async function yoycolVariants(productId, url, env) {
-  const safeId = String(productId || '').trim();
-  if (!/^[A-Za-z0-9_-]+$/.test(safeId)) return json({ error: 'Invalid Yoycol product ID.' }, 400);
-  const { page, size } = yoycolPaging(url, 50);
-  const result = await yoycolGet(`/catalog/products/${safeId}/variants`, env, { page, size });
-  if (result.error) return result.error;
-  return json(result.payload);
 }
 
 async function storefrontProducts(collectionSlug, token) {
@@ -316,22 +284,6 @@ export default {
     if (url.pathname === '/api/yoycol/status') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
       return yoycolStatus(env);
-    }
-
-    if (url.pathname === '/api/yoycol/catalog') {
-      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-      return yoycolCatalog(url, env);
-    }
-
-    if (url.pathname === '/api/yoycol/templates') {
-      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-      return yoycolTemplates(url, env);
-    }
-
-    const yoycolVariantMatch = url.pathname.match(/^\/api\/yoycol\/catalog\/([A-Za-z0-9_-]+)\/variants$/);
-    if (yoycolVariantMatch) {
-      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-      return yoycolVariants(yoycolVariantMatch[1], url, env);
     }
 
     if (url.pathname === '/api/storefront/products') {

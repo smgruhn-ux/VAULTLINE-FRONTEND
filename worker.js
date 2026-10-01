@@ -200,6 +200,130 @@ async function yoycolStatus(env) {
   });
 }
 
+function yoycolArray(payload) {
+  const candidates = [
+    payload?.data?.items, payload?.data?.results, payload?.data?.list, payload?.data?.records,
+    payload?.data?.productTemplates, payload?.data?.product_templates,
+    payload?.items, payload?.results, payload?.list, payload?.records,
+    payload?.productTemplates, payload?.product_templates, payload?.data
+  ];
+  return candidates.find(Array.isArray) || [];
+}
+
+function yoycolString(...values) {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  }
+  return '';
+}
+
+function yoycolNumber(...values) {
+  for (const value of values) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number >= 0) return number;
+  }
+  return 0;
+}
+
+function yoycolImageUrls(value, out = []) {
+  if (!value || out.length >= 24) return out;
+  if (typeof value === 'string') {
+    if (/^https?:\/\//i.test(value) && /\.(?:png|jpe?g|webp)(?:\?|$)/i.test(value)) out.push(value);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) yoycolImageUrls(item, out);
+    return out;
+  }
+  if (typeof value === 'object') {
+    for (const key of ['url','imageUrl','image_url','mockupUrl','mockup_url','previewUrl','preview_url','src']) {
+      const candidate = value[key];
+      if (typeof candidate === 'string' && /^https?:\/\//i.test(candidate)) out.push(candidate);
+    }
+    for (const key of ['images','mockups','previews','previewImages','preview_images','variants']) {
+      if (value[key]) yoycolImageUrls(value[key], out);
+    }
+  }
+  return out;
+}
+
+function yoycolVariantAttributes(variant = {}) {
+  const size = yoycolString(variant?.size, variant?.sizeName, variant?.size_name, variant?.attributes?.size?.name);
+  const color = yoycolString(variant?.color, variant?.colorName, variant?.color_name, variant?.attributes?.color?.name);
+  const swatch = yoycolString(variant?.colorHex, variant?.color_hex, variant?.hex, variant?.attributes?.color?.swatch);
+  const attributes = {};
+  if (size) attributes.size = { name: size };
+  if (color || swatch) attributes.color = { name: color || 'Color', swatch: swatch || '#151515' };
+  return attributes;
+}
+
+function mapYoycolTemplate(template = {}) {
+  const rawId = yoycolString(template.id, template.templateId, template.template_id, template.designId, template.design_id, template.uuid);
+  if (!rawId) return null;
+
+  const rawVariants = Array.isArray(template.variants)
+    ? template.variants
+    : (Array.isArray(template.variantList) ? template.variantList : (Array.isArray(template.variant_list) ? template.variant_list : []));
+
+  const images = [...new Set(yoycolImageUrls(template))].slice(0, 18);
+  const price = yoycolNumber(
+    template.retailPrice, template.retail_price, template.salePrice, template.sale_price,
+    template.price, template.basePrice, template.base_price,
+    rawVariants[0]?.retailPrice, rawVariants[0]?.retail_price, rawVariants[0]?.price
+  );
+
+  const variants = rawVariants.slice(0, 100).map((variant, index) => ({
+    id: 'yoycol:' + rawId + ':' + yoycolString(variant.id, variant.variantId, variant.variant_id, variant.sku, index),
+    unitPrice: { value: yoycolNumber(variant.retailPrice, variant.retail_price, variant.price, price), currency: 'USD' },
+    attributes: yoycolVariantAttributes(variant),
+    images: yoycolImageUrls(variant).slice(0, 4).map((url) => ({ url })),
+    provider: 'yoycol'
+  }));
+
+  return {
+    id: 'yoycol:' + rawId,
+    provider: 'yoycol',
+    providerId: rawId,
+    purchasable: false,
+    name: yoycolString(template.name, template.title, template.templateName, template.template_name, template.productName, template.product_name) || 'Vaultline Yoycol piece',
+    slug: ('yoycol-' + rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
+    description: yoycolString(template.description, template.desc, template.productDescription, template.product_description),
+    price,
+    currency: 'USD',
+    primaryImageUrl: images[0] || '',
+    images: images.map((url) => ({ url })),
+    variants
+  };
+}
+
+async function yoycolStorefrontProducts(url, env) {
+  const requestedSize = Math.max(1, Math.min(50, Number.parseInt(url.searchParams.get('size') || '50', 10) || 50));
+  const products = [];
+  const seen = new Set();
+
+  for (let page = 1; page <= 10; page += 1) {
+    const result = await yoycolGet('/product_templates', env, { page, size: requestedSize });
+    if (result.error) return result.error;
+
+    const rows = yoycolArray(result.payload);
+    for (const row of rows) {
+      const mapped = mapYoycolTemplate(row);
+      if (!mapped?.id || seen.has(mapped.id)) continue;
+      seen.add(mapped.id);
+      products.push(mapped);
+    }
+
+    if (rows.length < requestedSize) break;
+  }
+
+  return json({
+    provider: 'yoycol',
+    previewOnly: true,
+    products
+  });
+}
+
 async function storefrontProducts(collectionSlug, token) {
   const safe = String(collectionSlug || '').trim();
   if (!/^[a-z0-9-]+$/i.test(safe)) return json({ error: 'Invalid collection slug' }, 400);
@@ -284,6 +408,11 @@ export default {
     if (url.pathname === '/api/yoycol/status') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
       return yoycolStatus(env);
+    }
+
+    if (url.pathname === '/api/yoycol/products') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolStorefrontProducts(url, env);
     }
 
     if (url.pathname === '/api/storefront/products') {

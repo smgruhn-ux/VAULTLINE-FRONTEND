@@ -523,6 +523,7 @@ async function mapYoycolTemplate(template = {}, env) {
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.designName || meta.productName || 'Vaultline Yoycol piece',
     designName: meta.designName || '',
+    collectionSlugs: yoycolCollectionSlugs({ name: meta.productName || meta.designName || '', designName: meta.designName || '' }),
     publishedAt: meta.updatedAt || meta.createdAt || '',
     createdAt: meta.createdAt || '',
     updatedAt: meta.updatedAt || '',
@@ -668,6 +669,18 @@ async function yoycolDiagnostics(env) {
     rowCount: rows.length,
     samples
   });
+}
+
+function yoycolCollectionSlugs(product = {}) {
+  const name = String(product?.name || '').toLowerCase();
+  const designName = String(product?.designName || '').toLowerCase();
+  const combined = name + ' ' + designName;
+  const slugs = [];
+
+  if (/\b(women|women's|womens|woman|female|ladies|lady)\b/i.test(combined)) slugs.push('womens');
+  if (/\b(men|men's|mens|man|male)\b/i.test(combined)) slugs.push('mens');
+
+  return slugs;
 }
 
 function isYoycolSellableTemplate(product) {

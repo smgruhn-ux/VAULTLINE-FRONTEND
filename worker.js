@@ -523,6 +523,7 @@ async function mapYoycolTemplate(template = {}, env) {
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.designName || meta.productName || 'Vaultline Yoycol piece',
     designName: meta.designName || '',
+    baseProductName: meta.productName || '',
     collectionSlugs: yoycolCollectionSlugs({ name: meta.productName || meta.designName || '', designName: meta.designName || '' }),
     publishedAt: meta.updatedAt || meta.createdAt || '',
     createdAt: meta.createdAt || '',
@@ -686,8 +687,10 @@ function yoycolCollectionSlugs(product = {}) {
 function isYoycolSellableTemplate(product) {
   const name = String(product?.name || '').toLowerCase();
   const designName = String(product?.designName || '').toLowerCase();
-  const combined = name + ' ' + designName;
-  return !/(hang\s*tag|packag(?:e|ing)\s*bag|neck\s*label|care\s*label|brand(?:ing)?\s*label|thank\s*you\s*card|insert\s*card)/i.test(combined);
+  const baseProductName = String(product?.baseProductName || '').toLowerCase();
+  const combined = name + ' ' + designName + ' ' + baseProductName;
+
+  return !/(hang\s*tag|packag(?:e|ing)?\s*bag|poly\s*bag|neck\s*label|care\s*label|brand(?:ing)?\s*label|thank\s*you\s*card|insert\s*card|packaging|label\b)/i.test(combined);
 }
 
 async function yoycolStorefrontProducts(url, env) {

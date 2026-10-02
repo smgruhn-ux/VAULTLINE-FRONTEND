@@ -1,18 +1,103 @@
 const CART_KEY='vaultline_yoycol_cart_v1';
 const lines=document.querySelector('#cart-lines');
+const subtotalEl=document.querySelector('#cart-subtotal');
+const shippingEl=document.querySelector('#cart-shipping');
 const totalEl=document.querySelector('#cart-total');
 const paypalWrap=document.querySelector('#paypal-wrap');
 const errorEl=document.querySelector('#checkout-error');
 const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0);
+let paypalLoaded=false;
+
 function cart(){try{const c=JSON.parse(localStorage.getItem(CART_KEY)||'[]');return Array.isArray(c)?c:[]}catch{return[]}}
-function save(c){localStorage.setItem(CART_KEY,JSON.stringify(c));render()}
-function render(){const c=cart();let total=0;if(!c.length){lines.innerHTML='<p>Your Yoycol cart is empty.</p>';totalEl.textContent='$0.00';paypalWrap.innerHTML='';return}
-lines.innerHTML=c.map((item,i)=>{const q=Math.max(1,Number(item.quantity)||1);total+=Number(item.price||0)*q;return `<article class="v-line"><img src="${item.image||''}" alt=""><div><div class="v-name">${item.name||'Vaultline piece'}</div><div class="v-meta">${money(item.price)} each</div><button data-remove="${i}" style="margin-top:8px;background:none;border:0;color:#9da3ad;text-decoration:underline;cursor:pointer">Remove</button></div><div class="v-qty"><button data-minus="${i}">−</button><span>${q}</span><button data-plus="${i}">+</button></div></article>`}).join('');
-totalEl.textContent=money(total);
+
+function save(c){
+  localStorage.setItem(CART_KEY,JSON.stringify(c));
+  render();
+  refreshSummary();
 }
-lines.addEventListener('click',e=>{const c=cart();const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){c[+plus].quantity=Math.min(10,(Number(c[+plus].quantity)||1)+1);save(c)}if(minus!==undefined){c[+minus].quantity=Math.max(1,(Number(c[+minus].quantity)||1)-1);save(c)}if(remove!==undefined){c.splice(+remove,1);save(c)}});
+
+function render(){
+  const c=cart();
+  if(!c.length){
+    lines.innerHTML='<p>Your Yoycol cart is empty.</p>';
+    subtotalEl.textContent='$0.00';
+    shippingEl.textContent='$0.00';
+    totalEl.textContent='$0.00';
+    paypalWrap.innerHTML='';
+    return;
+  }
+  lines.innerHTML=c.map((item,i)=>{
+    const q=Math.max(1,Number(item.quantity)||1);
+    return '<article class="v-line">'+
+      '<img src="'+(item.image||'')+'" alt="">'+
+      '<div><div class="v-name">'+(item.name||'Vaultline piece')+'</div>'+
+      '<div class="v-meta">'+money(item.price)+' each</div>'+
+      '<button data-remove="'+i+'" style="margin-top:8px;background:none;border:0;color:#9da3ad;text-decoration:underline;cursor:pointer">Remove</button></div>'+
+      '<div class="v-qty"><button data-minus="'+i+'">−</button><span>'+q+'</span><button data-plus="'+i+'">+</button></div>'+
+      '</article>';
+  }).join('');
+}
+
+lines.addEventListener('click',e=>{
+  const c=cart();
+  const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;
+  if(plus!==undefined){c[+plus].quantity=Math.min(10,(Number(c[+plus].quantity)||1)+1);save(c)}
+  if(minus!==undefined){c[+minus].quantity=Math.max(1,(Number(c[+minus].quantity)||1)-1);save(c)}
+  if(remove!==undefined){c.splice(+remove,1);save(c)}
+});
+
 function payload(){return{items:cart().map(x=>({providerId:x.providerId,variantId:x.variantId,quantity:x.quantity}))}}
-async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Checkout request failed.');return data}
-async function loadPaypal(clientId){if(!clientId)return;const s=document.createElement('script');s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&currency=USD&intent=capture&components=buttons';s.onload=()=>{if(!window.paypal)return;paypal.Buttons({style:{layout:'vertical',shape:'rect',label:'paypal'},createOrder:async()=>{errorEl.textContent='';const d=await post('/api/payments/paypal/create-order',payload());return d.id},onApprove:async data=>{const result=await post('/api/payments/paypal/capture-order',{orderId:data.orderID});if(result.paid){localStorage.removeItem(CART_KEY);location.href='/order-received.html?provider=paypal&order='+encodeURIComponent(result.orderId)}},onError:err=>{console.error(err);errorEl.textContent='PayPal checkout failed. Please try another payment method.'}}).render('#paypal-wrap')};document.head.appendChild(s)}
-async function init(){render();try{const r=await fetch('/api/payments/config',{headers:{Accept:'application/json'}});const cfg=await r.json();if(cfg.paypal)loadPaypal(cfg.paypalClientId);if(!cfg.paypal)errorEl.textContent='Checkout is connected, but PayPal live credentials still need to be added before orders can be accepted.'}catch(e){errorEl.textContent='Payment configuration could not be loaded.'}}
+
+async function post(url,body){
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body)});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(data.error||'Checkout request failed.');
+  return data;
+}
+
+async function refreshSummary(){
+  const c=cart();
+  if(!c.length){subtotalEl.textContent='$0.00';shippingEl.textContent='$0.00';totalEl.textContent='$0.00';return}
+  try{
+    const summary=await post('/api/yoycol/checkout-summary',payload());
+    subtotalEl.textContent=money(summary.itemTotal);
+    shippingEl.textContent=money(summary.shipping);
+    totalEl.textContent=money(summary.total);
+    errorEl.textContent='';
+  }catch(err){console.error(err);errorEl.textContent=err.message||'Could not calculate checkout total.'}
+}
+
+async function loadPaypal(clientId){
+  if(!clientId||paypalLoaded||!cart().length)return;
+  paypalLoaded=true;
+  const s=document.createElement('script');
+  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(clientId)+'&currency=USD&intent=capture&components=buttons';
+  s.onload=()=>{
+    if(!window.paypal)return;
+    paypal.Buttons({
+      style:{layout:'vertical',shape:'rect',label:'paypal'},
+      createOrder:async()=>{errorEl.textContent='';const d=await post('/api/payments/paypal/create-order',payload());return d.id},
+      onApprove:async data=>{
+        try{
+          const result=await post('/api/payments/paypal/capture-order',{orderId:data.orderID});
+          if(result.paid){localStorage.removeItem(CART_KEY);location.href='/order-received.html?provider=paypal&order='+encodeURIComponent(result.orderId)}
+        }catch(err){errorEl.textContent=err.message||'Payment could not be completed.'}
+      },
+      onError:err=>{console.error(err);errorEl.textContent='PayPal checkout failed. Please try again.'}
+    }).render('#paypal-wrap');
+  };
+  document.head.appendChild(s);
+}
+
+async function init(){
+  render();
+  await refreshSummary();
+  try{
+    const r=await fetch('/api/payments/config',{headers:{Accept:'application/json'}});
+    const cfg=await r.json();
+    if(cfg.paypal)loadPaypal(cfg.paypalClientId);
+    if(!cfg.paypal)errorEl.textContent='Checkout is connected, but PayPal live credentials still need to be added before orders can be accepted.';
+  }catch(e){errorEl.textContent='Payment configuration could not be loaded.'}
+}
+
 init();

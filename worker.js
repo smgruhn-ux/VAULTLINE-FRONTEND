@@ -622,7 +622,6 @@ async function yoycolDiagnostics(env) {
     const meta = yoycolTemplateMeta(row);
     const catalogVariants = meta.productId ? await yoycolCatalogVariants(meta.productId, env) : [];
     const mapped = await mapYoycolTemplate(row, env);
-    const shippingProbe = meta.productId ? await yoycolShippingProbe(meta.productId, env) : null;
     samples.push({
       keys: Object.keys(row || {}).slice(0, 40),
       id: mapped?.providerId || null,
@@ -644,8 +643,7 @@ async function yoycolDiagnostics(env) {
       supplierCostMax: mapped?.supplierCostMax || 0,
       customerPriceFrom: mapped?.price || 0,
       pricingRule: mapped?.pricingRule || null,
-      needsRetailPrice: Boolean(mapped?.needsRetailPrice),
-      shippingProbe
+      needsRetailPrice: Boolean(mapped?.needsRetailPrice)
     });
   }
 
@@ -704,6 +702,52 @@ async function readJsonBody(request) {
   }
 }
 
+function yoycolShippingTier(productName = '') {
+  const name = String(productName || '').toLowerCase();
+
+  if (/(shoe|sneaker|boot|slipper|loafer|sandal|heel|footwear|backpack|duffel|travel bag|handbag)/i.test(name)) {
+    return { code: 'bulky', label: 'US Standard', first: 18, additional: 8 };
+  }
+  if (/(jacket|coat|parka|puffer|varsity|bomber|heavyweight|thick hoodie|zip hoodie)/i.test(name)) {
+    return { code: 'heavy', label: 'US Standard', first: 14, additional: 6 };
+  }
+  if (/(hoodie|sweatshirt|sweater|jogger|sweatpant|pants|jeans|denim|jersey|tracksuit)/i.test(name)) {
+    return { code: 'standard', label: 'US Standard', first: 12, additional: 5 };
+  }
+  if (/(t-shirt|tee|tank|crop top|cropped top|mesh|long sleeve|long-sleeve|shorts|legging|skirt|dress|bodysuit|top\b|shirt\b)/i.test(name)) {
+    return { code: 'light', label: 'US Standard', first: 9, additional: 4 };
+  }
+  if (/(hat|cap|beanie|sock|scarf|glove|phone case|wallet|pouch|accessor|jewelry|bracelet|necklace)/i.test(name)) {
+    return { code: 'small', label: 'US Standard', first: 7, additional: 3 };
+  }
+
+  return { code: 'default', label: 'US Standard', first: 13, additional: 6 };
+}
+
+function yoycolAutomaticShipping(resolvedItems = []) {
+  const units = [];
+  for (const item of resolvedItems) {
+    const tier = yoycolShippingTier(item?.name);
+    const quantity = safeQuantity(item?.quantity);
+    for (let i = 0; i < quantity; i += 1) {
+      units.push({ ...tier, name: item?.name || 'Vaultline piece' });
+    }
+  }
+
+  if (!units.length) return { amount: 0, method: 'US Standard', model: 'automatic_tiered' };
+
+  units.sort((a, b) => b.first - a.first);
+  const amount = units[0].first + units.slice(1).reduce((sum, unit) => sum + unit.additional, 0);
+
+  return {
+    amount: Math.round(amount * 100) / 100,
+    method: 'US Standard',
+    model: 'automatic_tiered',
+    anchorTier: units[0].code
+  };
+}
+
+
 async function loadYoycolTemplates(env) {
   const products = [];
   const seen = new Set();
@@ -758,8 +802,191 @@ async function resolveYoycolCheckout(items, env) {
       attributes: variant.attributes || {}
     });
   }
-  const total = Math.round(resolved.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) * 100) / 100;
-  return { items: resolved, total, currency: 'USD' };
+  const itemTotal = Math.round(resolved.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) * 100) / 100;
+  const shipping = yoycolAutomaticShipping(resolved);
+  const total = Math.round((itemTotal + shipping.amount) * 100) / 100;
+  return {
+    items: resolved,
+    itemTotal,
+    shipping: shipping.amount,
+    shippingMethod: shipping.method,
+    shippingModel: shipping.model,
+    total,
+    currency: 'USD',
+    country: 'US'
+  };
+}
+
+
+function paymentConfig(env) {
+  const paypalClientId = String(env.PAYPAL_CLIENT_ID || '').trim();
+  return {
+    fulfillmentMode: 'manual_after_settlement',
+    paypal: Boolean(paypalClientId && String(env.PAYPAL_CLIENT_SECRET || '').trim()),
+    paypalClientId: paypalClientId || null,
+    paypalMode: String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live',
+    shippingCountry: 'US',
+    shippingMethod: 'US Standard'
+  };
+}
+
+async function paypalAccessToken(env) {
+  const clientId = String(env.PAYPAL_CLIENT_ID || '').trim();
+  const secret = String(env.PAYPAL_CLIENT_SECRET || '').trim();
+  if (!clientId || !secret) return { error: json({ error: 'PayPal is not configured.' }, 503) };
+  const mode = String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live';
+  const base = mode === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+  const credentials = btoa(clientId + ':' + secret);
+  const response = await fetch(base + '/v1/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + credentials,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.access_token) {
+    return { error: json({ error: 'PayPal authentication failed.' }, 502) };
+  }
+  return { token: payload.access_token, base };
+}
+
+async function paypalCreateOrder(request, env) {
+  const body = await readJsonBody(request);
+  const checkout = await resolveYoycolCheckout(body?.items, env);
+  if (checkout.error) return checkout.error;
+
+  const auth = await paypalAccessToken(env);
+  if (auth.error) return auth.error;
+
+  const itemTotal = checkout.itemTotal.toFixed(2);
+  const shipping = checkout.shipping.toFixed(2);
+  const grandTotal = checkout.total.toFixed(2);
+
+  const response = await fetch(auth.base + '/v2/checkout/orders', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + auth.token,
+      'Content-Type': 'application/json',
+      'PayPal-Request-Id': 'vaultline-' + randomHex(12)
+    },
+    body: JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        description: 'Vaultline by Gizzy Graves — Yoycol fulfillment',
+        custom_id: 'VAULTLINE-YOYCOL-HOLD',
+        amount: {
+          currency_code: 'USD',
+          value: grandTotal,
+          breakdown: {
+            item_total: { currency_code: 'USD', value: itemTotal },
+            shipping: { currency_code: 'USD', value: shipping }
+          }
+        },
+        items: checkout.items.map((item) => ({
+          name: item.name.slice(0, 120),
+          quantity: String(item.quantity),
+          unit_amount: { currency_code: 'USD', value: item.unitPrice.toFixed(2) },
+          category: 'PHYSICAL_GOODS',
+          sku: (item.providerId + ':' + item.variantId).slice(0, 127)
+        }))
+      }],
+      application_context: {
+        brand_name: 'Vaultline by Gizzy Graves',
+        shipping_preference: 'GET_FROM_FILE',
+        user_action: 'PAY_NOW',
+        return_url: 'https://vaultlineofficial.us/order-received.html?provider=paypal',
+        cancel_url: 'https://vaultlineofficial.us/yoycol-checkout.html?cancelled=1'
+      }
+    })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload.id) {
+    return json({ error: payload?.message || 'PayPal order creation failed.' }, 502);
+  }
+
+  return json({
+    id: payload.id,
+    itemTotal: checkout.itemTotal,
+    shipping: checkout.shipping,
+    shippingMethod: checkout.shippingMethod,
+    total: checkout.total,
+    currency: checkout.currency
+  });
+}
+
+async function paypalOrderDetails(orderId, auth) {
+  const response = await fetch(auth.base + '/v2/checkout/orders/' + encodeURIComponent(orderId), {
+    method: 'GET',
+    headers: {
+      Authorization: 'Bearer ' + auth.token,
+      'Accept': 'application/json'
+    }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) return { error: payload?.message || 'PayPal order lookup failed.' };
+  return { payload };
+}
+
+async function paypalCaptureOrder(request, env) {
+  const body = await readJsonBody(request);
+  const orderId = yoycolString(body?.orderId);
+  if (!/^[A-Z0-9]+$/i.test(orderId)) return json({ error: 'Invalid PayPal order ID.' }, 400);
+
+  const auth = await paypalAccessToken(env);
+  if (auth.error) return auth.error;
+
+  const details = await paypalOrderDetails(orderId, auth);
+  if (details.error) return json({ error: details.error }, 502);
+  const country = yoycolString(details.payload?.purchase_units?.[0]?.shipping?.address?.country_code).toUpperCase();
+  if (country !== 'US') {
+    return json({ error: 'Vaultline Yoycol checkout currently ships to U.S. addresses only. Your payment was not captured.' }, 409);
+  }
+
+  const response = await fetch(auth.base + '/v2/checkout/orders/' + encodeURIComponent(orderId) + '/capture', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + auth.token,
+      'Content-Type': 'application/json',
+      'PayPal-Request-Id': 'vaultline-capture-' + orderId
+    },
+    body: '{}'
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) return json({ error: payload?.message || 'PayPal capture failed.' }, 502);
+
+  const paid = payload?.status === 'COMPLETED';
+  return json({
+    paid,
+    status: payload?.status || null,
+    orderId: payload?.id || orderId,
+    fulfillmentStatus: paid ? 'PAID_AWAITING_MANUAL_PRODUCTION' : 'PAYMENT_NOT_COMPLETED'
+  }, paid ? 200 : 409);
+}
+
+async function yoycolCheckoutSummary(request, env) {
+  const body = await readJsonBody(request);
+  const checkout = await resolveYoycolCheckout(body?.items, env);
+  if (checkout.error) return checkout.error;
+  return json({
+    items: checkout.items.map((item) => ({
+      providerId: item.providerId,
+      variantId: item.variantId,
+      name: item.name,
+      image: item.image,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      attributes: item.attributes
+    })),
+    itemTotal: checkout.itemTotal,
+    shipping: checkout.shipping,
+    shippingMethod: checkout.shippingMethod,
+    total: checkout.total,
+    currency: checkout.currency,
+    country: checkout.country
+  });
 }
 
 async function storefrontProducts(collectionSlug, token) {
@@ -861,6 +1088,11 @@ export default {
     if (url.pathname === '/api/payments/config') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
       return json(paymentConfig(env));
+    }
+
+    if (url.pathname === '/api/yoycol/checkout-summary') {
+      if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+      return yoycolCheckoutSummary(request, env);
     }
 
     if (url.pathname === '/api/payments/paypal/create-order') {

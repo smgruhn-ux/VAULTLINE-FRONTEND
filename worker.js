@@ -339,24 +339,68 @@ function yoycolTemplateMeta(template = {}) {
 
 function yoycolSupplierCost(value) {
   if (!value || typeof value !== 'object') return 0;
-  const candidates = [
+
+  const directCandidates = [
     value.cost, value.COST,
     value.price, value.PRICE,
     value.productPrice, value.PRODUCTPRICE, value.product_price,
     value.basePrice, value.BASEPRICE, value.base_price,
     value.originalPrice, value.ORIGINALPRICE, value.original_price,
+    value.originPrice, value.ORIGINPRICE, value.origin_price,
     value.vipPrice, value.VIPPRICE, value.vip_price,
     value.salePrice, value.SALEPRICE, value.sale_price,
+    value.currentPrice, value.CURRENTPRICE, value.current_price,
     value.unitPrice?.value, value.unit_price?.value,
     value.price?.value, value.price?.amount,
     value.priceInfo?.price, value.priceInfo?.cost,
-    value.price_info?.price, value.price_info?.cost
+    value.priceInfo?.originalPrice, value.priceInfo?.originPrice,
+    value.price_info?.price, value.price_info?.cost,
+    value.price_info?.original_price, value.price_info?.origin_price
   ];
-  for (const candidate of candidates) {
+
+  for (const candidate of directCandidates) {
     const n = Number(candidate);
     if (Number.isFinite(n) && n > 0) return n;
   }
-  return 0;
+
+  // Yoycol catalog responses vary by endpoint/version. Walk nested pricing
+  // objects, but deliberately ignore retail/customer, shipping, tax and totals.
+  const matches = [];
+  const visit = (node, depth = 0, path = '') => {
+    if (!node || depth > 5) return;
+    if (Array.isArray(node)) {
+      for (const item of node.slice(0, 8)) visit(item, depth + 1, path);
+      return;
+    }
+    if (typeof node !== 'object') return;
+
+    for (const [key, child] of Object.entries(node)) {
+      const keyText = String(key);
+      const keyLower = keyText.toLowerCase();
+      const nextPath = path ? path + '.' + keyText : keyText;
+
+      if (
+        !/retail|customer|shipping|shipfee|freight|tax|total|subtotal|discountamount|profit/i.test(nextPath) &&
+        /(^|_)(cost|price|amount)(_|$)|cost$|price$|amount$|originprice|originalprice|vipprice|productprice|baseprice|saleprice/i.test(keyLower)
+      ) {
+        const n = Number(child);
+        if (Number.isFinite(n) && n > 0) {
+          let score = 1;
+          if (/^(cost|price)$/i.test(keyText)) score = 8;
+          else if (/productprice|baseprice|originprice|originalprice/i.test(keyLower)) score = 7;
+          else if (/vipprice|saleprice/i.test(keyLower)) score = 6;
+          else if (/price/i.test(keyLower)) score = 5;
+          matches.push({ n, score, path: nextPath });
+        }
+      }
+
+      if (child && typeof child === 'object') visit(child, depth + 1, nextPath);
+    }
+  };
+
+  visit(value);
+  matches.sort((a, b) => b.score - a.score);
+  return matches[0]?.n || 0;
 }
 
 // Vaultline boutique pricing rule:
@@ -503,6 +547,12 @@ async function yoycolDiagnostics(env) {
       imageCount: mapped?.images?.length || 0,
       templateVariantCount: yoycolRawVariants(row).length,
       catalogVariantCount: catalogVariants.length,
+      catalogVariantKeys: Object.keys(catalogVariants[0] || {}).slice(0, 50),
+      catalogVariantPriceFields: Object.fromEntries(
+        Object.entries(catalogVariants[0] || {})
+          .filter(([key, value]) => /price|cost|amount/i.test(key) && ['string','number'].includes(typeof value))
+          .slice(0, 20)
+      ),
       mappedVariantCount: mapped?.variants?.length || 0,
       supplierCostMin: mapped?.supplierCostMin || 0,
       supplierCostMax: mapped?.supplierCostMax || 0,

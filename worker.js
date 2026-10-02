@@ -286,47 +286,149 @@ function yoycolImageUrls(value, out = [], depth = 0) {
   return out;
 }
 
+
 function yoycolVariantAttributes(variant = {}) {
-  const size = yoycolString(variant?.size, variant?.sizeName, variant?.size_name, variant?.attributes?.size?.name);
-  const color = yoycolString(variant?.color, variant?.colorName, variant?.color_name, variant?.attributes?.color?.name);
-  const swatch = yoycolString(variant?.colorHex, variant?.color_hex, variant?.hex, variant?.attributes?.color?.swatch);
+  const size = yoycolString(
+    variant?.size, variant?.SIZE, variant?.sizeName, variant?.SIZENAME, variant?.size_name,
+    variant?.attributes?.size?.name
+  );
+  const color = yoycolString(
+    variant?.color, variant?.COLOR, variant?.colorName, variant?.COLORNAME, variant?.color_name,
+    variant?.attributes?.color?.name
+  );
+  const swatch = yoycolString(
+    variant?.colorHex, variant?.COLORHEX, variant?.color_hex, variant?.hex, variant?.HEX,
+    variant?.attributes?.color?.swatch
+  );
   const attributes = {};
   if (size) attributes.size = { name: size };
   if (color || swatch) attributes.color = { name: color || 'Color', swatch: swatch || '#151515' };
   return attributes;
 }
 
-function mapYoycolTemplate(template = {}) {
-  const rawId = yoycolString(template.id, template.templateId, template.template_id, template.templateNo, template.template_no, template.templateCode, template.template_code, template.designId, template.design_id, template.designNo, template.design_no, template.code, template.uuid);
-  if (!rawId) return null;
+function yoycolTemplateMeta(template = {}) {
+  return {
+    rawId: yoycolString(
+      template.id, template.ID, template.templateId, template.TEMPLATEID, template.template_id,
+      template.templateNo, template.TEMPLATENO, template.template_no, template.templateCode,
+      template.TEMPLATECODE, template.template_code, template.designId, template.DESIGNID,
+      template.design_id, template.designNo, template.DESIGNNO, template.design_no,
+      template.code, template.CODE, template.uuid, template.UUID
+    ),
+    designCode: yoycolString(
+      template.designCode, template.DESIGNCODE, template.design_code, template.code, template.CODE
+    ),
+    productId: yoycolString(
+      template.productId, template.PRODUCTID, template.product_id, template.spuId, template.SPUID,
+      template.spu_id
+    ),
+    designName: yoycolString(
+      template.designName, template.DESIGNNAME, template.design_name, template.name, template.NAME,
+      template.title, template.TITLE, template.templateName, template.TEMPLATENAME, template.template_name
+    ),
+    productName: yoycolString(
+      template.productName, template.PRODUCTNAME, template.product_name, template.spuName,
+      template.SPUNAME, template.spu_name
+    ),
+    previewImage: yoycolString(
+      template.previewImage, template.PREVIEWIMAGE, template.preview_image, template.mockupUrl,
+      template.MOCKUPURL, template.imageUrl, template.IMAGEURL
+    )
+  };
+}
 
-  const rawVariants = Array.isArray(template.variants)
-    ? template.variants
-    : (Array.isArray(template.variantList) ? template.variantList
-      : (Array.isArray(template.variant_list) ? template.variant_list
-        : (Array.isArray(template.skus) ? template.skus
-          : (Array.isArray(template.skuList) ? template.skuList
-            : (Array.isArray(template.sku_list) ? template.sku_list : [])))));
+function yoycolPriceOverrides(env) {
+  const raw = String(env.YOYCOL_PRICE_OVERRIDES || '').trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
-  const images = [...new Set(yoycolImageUrls(template))].slice(0, 18);
-  const price = yoycolNumber(
-    template.retailPrice, template.retail_price, template.salePrice, template.sale_price,
-    template.price, template.sellPrice, template.sell_price, template.sellingPrice, template.selling_price,
-    template.priceInfo?.retailPrice, template.price_info?.retail_price,
-    rawVariants[0]?.retailPrice, rawVariants[0]?.retail_price, rawVariants[0]?.salePrice, rawVariants[0]?.sale_price, rawVariants[0]?.price
+function yoycolRetailPrice(template, env) {
+  const meta = yoycolTemplateMeta(template);
+  const overrides = yoycolPriceOverrides(env);
+  const override = yoycolNumber(
+    overrides[meta.rawId],
+    overrides[meta.designCode],
+    overrides[meta.productId]
+  );
+  if (override > 0) return override;
+
+  return yoycolNumber(
+    template.retailPrice, template.RETAILPRICE, template.retail_price,
+    template.salePrice, template.SALEPRICE, template.sale_price,
+    template.sellPrice, template.SELLPRICE, template.sell_price,
+    template.sellingPrice, template.SELLINGPRICE, template.selling_price,
+    template.priceInfo?.retailPrice, template.price_info?.retail_price
+  );
+}
+
+function yoycolRawVariants(template = {}) {
+  return Array.isArray(template.variants) ? template.variants
+    : (Array.isArray(template.VARIANTS) ? template.VARIANTS
+      : (Array.isArray(template.variantList) ? template.variantList
+        : (Array.isArray(template.VARIANTLIST) ? template.VARIANTLIST
+          : (Array.isArray(template.variant_list) ? template.variant_list
+            : (Array.isArray(template.skus) ? template.skus
+              : (Array.isArray(template.SKUS) ? template.SKUS
+                : (Array.isArray(template.skuList) ? template.skuList
+                  : (Array.isArray(template.SKULIST) ? template.SKULIST
+                    : (Array.isArray(template.sku_list) ? template.sku_list : [])))))))));
+}
+
+function mapYoycolVariant(rawId, variant, index, retailPrice, fallbackImages = []) {
+  const rawVariantId = yoycolString(
+    variant?.id, variant?.ID, variant?.variantId, variant?.VARIANTID, variant?.variant_id,
+    variant?.skuId, variant?.SKUID, variant?.sku_id, variant?.sku, variant?.SKU,
+    variant?.code, variant?.CODE, index
+  );
+  const images = [...new Set(yoycolImageUrls(variant))].slice(0, 4);
+  return {
+    id: 'yoycol:' + rawId + ':' + rawVariantId,
+    providerVariantId: rawVariantId,
+    unitPrice: { value: retailPrice, currency: 'USD' },
+    attributes: yoycolVariantAttributes(variant),
+    images: (images.length ? images : fallbackImages.slice(0, 4)).map((url) => ({ url })),
+    provider: 'yoycol'
+  };
+}
+
+async function yoycolCatalogVariants(productId, env) {
+  if (!productId) return [];
+  const result = await yoycolGet('/catalog/products/' + encodeURIComponent(productId) + '/variants', env);
+  if (result.error) return [];
+  return yoycolArray(result.payload);
+}
+
+async function mapYoycolTemplate(template = {}, env) {
+  const meta = yoycolTemplateMeta(template);
+  if (!meta.rawId) return null;
+
+  const images = [...new Set([
+    ...(meta.previewImage ? [meta.previewImage] : []),
+    ...yoycolImageUrls(template)
+  ])].slice(0, 18);
+
+  const retailPrice = yoycolRetailPrice(template, env);
+  let rawVariants = yoycolRawVariants(template);
+
+  if (!rawVariants.length && meta.productId) {
+    rawVariants = await yoycolCatalogVariants(meta.productId, env);
+  }
+
+  let variants = rawVariants.slice(0, 150).map((variant, index) =>
+    mapYoycolVariant(meta.rawId, variant, index, retailPrice, images)
   );
 
-  let variants = rawVariants.slice(0, 100).map((variant, index) => ({
-    id: 'yoycol:' + rawId + ':' + yoycolString(variant.id, variant.variantId, variant.variant_id, variant.sku, index),
-    unitPrice: { value: yoycolNumber(variant.retailPrice, variant.retail_price, variant.price, price), currency: 'USD' },
-    attributes: yoycolVariantAttributes(variant),
-    images: yoycolImageUrls(variant).slice(0, 4).map((url) => ({ url })),
-    provider: 'yoycol'
-  }));
-  if (!variants.length && price > 0) {
+  if (!variants.length && retailPrice > 0) {
     variants = [{
-      id: 'yoycol:' + rawId + ':default',
-      unitPrice: { value: price, currency: 'USD' },
+      id: 'yoycol:' + meta.rawId + ':default',
+      providerVariantId: 'default',
+      unitPrice: { value: retailPrice, currency: 'USD' },
       attributes: {},
       images: images.slice(0, 4).map((url) => ({ url })),
       provider: 'yoycol'
@@ -334,14 +436,22 @@ function mapYoycolTemplate(template = {}) {
   }
 
   return {
-    id: 'yoycol:' + rawId,
+    id: 'yoycol:' + meta.rawId,
     provider: 'yoycol',
-    providerId: rawId,
-    purchasable: price > 0 && variants.length > 0,
-    name: yoycolString(template.name, template.title, template.designName, template.design_name, template.templateName, template.template_name, template.productName, template.product_name, template.spuName, template.spu_name) || 'Vaultline Yoycol piece',
-    slug: ('yoycol-' + rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
-    description: yoycolString(template.description, template.desc, template.productDescription, template.product_description, template.templateDescription, template.template_description),
-    price,
+    providerId: meta.rawId,
+    designCode: meta.designCode,
+    productId: meta.productId,
+    purchasable: retailPrice > 0 && variants.length > 0,
+    needsRetailPrice: retailPrice <= 0,
+    name: meta.productName || meta.designName || 'Vaultline Yoycol piece',
+    designName: meta.designName || '',
+    slug: ('yoycol-' + meta.rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
+    description: yoycolString(
+      template.description, template.DESCRIPTION, template.desc, template.DESC,
+      template.productDescription, template.PRODUCTDESCRIPTION, template.product_description,
+      template.templateDescription, template.TEMPLATEDESCRIPTION, template.template_description
+    ),
+    price: retailPrice,
     currency: 'USD',
     primaryImageUrl: images[0] || '',
     images: images.map((url) => ({ url })),
@@ -364,17 +474,26 @@ async function yoycolDiagnostics(env) {
   }
 
   const rows = yoycolArray(result.payload);
-  const samples = rows.slice(0, 5).map((row) => {
-    const mapped = mapYoycolTemplate(row);
-    return {
+  const samples = [];
+  for (const row of rows.slice(0, 5)) {
+    const meta = yoycolTemplateMeta(row);
+    const catalogVariants = meta.productId ? await yoycolCatalogVariants(meta.productId, env) : [];
+    const mapped = await mapYoycolTemplate(row, env);
+    samples.push({
       keys: Object.keys(row || {}).slice(0, 40),
       id: mapped?.providerId || null,
+      designCode: mapped?.designCode || null,
+      productId: mapped?.productId || null,
       name: mapped?.name || null,
+      designName: mapped?.designName || null,
       imageCount: mapped?.images?.length || 0,
-      variantCount: mapped?.variants?.length || 0,
-      price: mapped?.price || 0
-    };
-  });
+      templateVariantCount: yoycolRawVariants(row).length,
+      catalogVariantCount: catalogVariants.length,
+      mappedVariantCount: mapped?.variants?.length || 0,
+      retailPrice: mapped?.price || 0,
+      needsRetailPrice: Boolean(mapped?.needsRetailPrice)
+    });
+  }
 
   return json({
     ok: true,
@@ -396,7 +515,7 @@ async function yoycolStorefrontProducts(url, env) {
 
     const rows = yoycolArray(result.payload);
     for (const row of rows) {
-      const mapped = mapYoycolTemplate(row);
+      const mapped = await mapYoycolTemplate(row, env);
       if (!mapped?.id || seen.has(mapped.id)) continue;
       seen.add(mapped.id);
       products.push(mapped);
@@ -411,7 +530,6 @@ async function yoycolStorefrontProducts(url, env) {
     products
   });
 }
-
 
 function safeQuantity(value) {
   return Math.max(1, Math.min(10, Number.parseInt(String(value || '1'), 10) || 1));
@@ -434,7 +552,7 @@ async function loadYoycolTemplates(env) {
     if (result.error) return result;
     const rows = yoycolArray(result.payload);
     for (const row of rows) {
-      const mapped = mapYoycolTemplate(row);
+      const mapped = await mapYoycolTemplate(row, env);
       if (!mapped?.providerId || seen.has(mapped.providerId)) continue;
       seen.add(mapped.providerId);
       products.push(mapped);
@@ -458,7 +576,7 @@ async function resolveYoycolCheckout(items, env) {
     const quantity = safeQuantity(incoming?.quantity);
     const product = loaded.products.find((p) => p.providerId === providerId);
     if (!product || !product.purchasable) {
-      return { error: json({ error: 'One of the Yoycol products is no longer available for checkout.' }, 409) };
+      return { error: json({ error: 'One of the Yoycol products is not ready for checkout. Set a retail price first.' }, 409) };
     }
     const variant = product.variants.find((v) => v.id === variantId) || product.variants[0];
     const unit = Number(variant?.unitPrice?.value || product.price || 0);
@@ -467,6 +585,9 @@ async function resolveYoycolCheckout(items, env) {
     }
     resolved.push({
       providerId,
+      providerVariantId: variant?.providerVariantId || '',
+      productId: product.productId || '',
+      designCode: product.designCode || '',
       variantId: variant.id,
       name: product.name,
       image: product.primaryImageUrl || '',
@@ -478,111 +599,6 @@ async function resolveYoycolCheckout(items, env) {
   }
   const total = Math.round(resolved.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) * 100) / 100;
   return { items: resolved, total, currency: 'USD' };
-}
-
-function paymentConfig(env) {
-  const paypalClientId = String(env.PAYPAL_CLIENT_ID || '').trim();
-  return {
-    fulfillmentMode: 'manual_after_settlement',
-    paypal: Boolean(paypalClientId && String(env.PAYPAL_CLIENT_SECRET || '').trim()),
-    paypalClientId: paypalClientId || null,
-    paypalMode: String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live'
-  };
-}
-
-async function paypalAccessToken(env) {
-  const clientId = String(env.PAYPAL_CLIENT_ID || '').trim();
-  const secret = String(env.PAYPAL_CLIENT_SECRET || '').trim();
-  if (!clientId || !secret) return { error: json({ error: 'PayPal is not configured.' }, 503) };
-  const mode = String(env.PAYPAL_MODE || 'live').toLowerCase() === 'sandbox' ? 'sandbox' : 'live';
-  const base = mode === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
-  const credentials = btoa(clientId + ':' + secret);
-  const response = await fetch(base + '/v1/oauth2/token', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Basic ' + credentials,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: 'grant_type=client_credentials'
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || !payload.access_token) {
-    return { error: json({ error: 'PayPal authentication failed.' }, 502) };
-  }
-  return { token: payload.access_token, base };
-}
-
-async function paypalCreateOrder(request, env) {
-  const body = await readJsonBody(request);
-  const checkout = await resolveYoycolCheckout(body?.items, env);
-  if (checkout.error) return checkout.error;
-  const auth = await paypalAccessToken(env);
-  if (auth.error) return auth.error;
-
-  const itemTotal = checkout.total.toFixed(2);
-  const response = await fetch(auth.base + '/v2/checkout/orders', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + auth.token,
-      'Content-Type': 'application/json',
-      'PayPal-Request-Id': 'vaultline-' + randomHex(12)
-    },
-    body: JSON.stringify({
-      intent: 'CAPTURE',
-      purchase_units: [{
-        description: 'Vaultline by Gizzy Graves — Yoycol fulfillment',
-        custom_id: 'VAULTLINE-YOYCOL-HOLD',
-        amount: {
-          currency_code: 'USD',
-          value: itemTotal,
-          breakdown: { item_total: { currency_code: 'USD', value: itemTotal } }
-        },
-        items: checkout.items.map((item) => ({
-          name: item.name.slice(0, 120),
-          quantity: String(item.quantity),
-          unit_amount: { currency_code: 'USD', value: item.unitPrice.toFixed(2) },
-          category: 'PHYSICAL_GOODS',
-          sku: (item.providerId + ':' + item.variantId).slice(0, 127)
-        }))
-      }],
-      application_context: {
-        brand_name: 'Vaultline by Gizzy Graves',
-        shipping_preference: 'GET_FROM_FILE',
-        user_action: 'PAY_NOW',
-        return_url: 'https://vaultlineofficial.us/order-received.html?provider=paypal',
-        cancel_url: 'https://vaultlineofficial.us/yoycol-checkout.html?cancelled=1'
-      }
-    })
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || !payload.id) return json({ error: payload?.message || 'PayPal order creation failed.' }, 502);
-  return json({ id: payload.id, total: checkout.total, currency: checkout.currency });
-}
-
-async function paypalCaptureOrder(request, env) {
-  const body = await readJsonBody(request);
-  const orderId = yoycolString(body?.orderId);
-  if (!/^[A-Z0-9]+$/i.test(orderId)) return json({ error: 'Invalid PayPal order ID.' }, 400);
-  const auth = await paypalAccessToken(env);
-  if (auth.error) return auth.error;
-  const response = await fetch(auth.base + '/v2/checkout/orders/' + encodeURIComponent(orderId) + '/capture', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + auth.token,
-      'Content-Type': 'application/json',
-      'PayPal-Request-Id': 'vaultline-capture-' + orderId
-    },
-    body: '{}'
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) return json({ error: payload?.message || 'PayPal capture failed.' }, 502);
-  const paid = payload?.status === 'COMPLETED';
-  return json({
-    paid,
-    status: payload?.status || null,
-    orderId: payload?.id || orderId,
-    fulfillmentStatus: paid ? 'PAID_AWAITING_MANUAL_PRODUCTION' : 'PAYMENT_NOT_COMPLETED'
-  }, paid ? 200 : 409);
 }
 
 async function storefrontProducts(collectionSlug, token) {

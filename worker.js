@@ -863,6 +863,7 @@ async function paypalCreateOrder(request, env) {
   const itemTotal = checkout.itemTotal.toFixed(2);
   const shipping = checkout.shipping.toFixed(2);
   const grandTotal = checkout.total.toFixed(2);
+  const vaultlineReference = 'VL-' + Date.now().toString(36).toUpperCase() + '-' + randomHex(4).toUpperCase();
 
   const response = await fetch(auth.base + '/v2/checkout/orders', {
     method: 'POST',
@@ -875,7 +876,8 @@ async function paypalCreateOrder(request, env) {
       intent: 'CAPTURE',
       purchase_units: [{
         description: 'Vaultline by Gizzy Graves — Yoycol fulfillment',
-        custom_id: 'VAULTLINE-YOYCOL-HOLD',
+        custom_id: 'VAULTLINE-YOYCOL-AWAITING-PRODUCTION',
+        invoice_id: vaultlineReference,
         amount: {
           currency_code: 'USD',
           value: grandTotal,
@@ -909,6 +911,7 @@ async function paypalCreateOrder(request, env) {
 
   return json({
     id: payload.id,
+    reference: vaultlineReference,
     itemTotal: checkout.itemTotal,
     shipping: checkout.shipping,
     shippingMethod: checkout.shippingMethod,
@@ -940,7 +943,9 @@ async function paypalCaptureOrder(request, env) {
 
   const details = await paypalOrderDetails(orderId, auth);
   if (details.error) return json({ error: details.error }, 502);
-  const country = yoycolString(details.payload?.purchase_units?.[0]?.shipping?.address?.country_code).toUpperCase();
+  const purchaseUnit = details.payload?.purchase_units?.[0] || {};
+  const country = yoycolString(purchaseUnit?.shipping?.address?.country_code).toUpperCase();
+  const vaultlineReference = yoycolString(purchaseUnit?.invoice_id);
   if (country !== 'US') {
     return json({ error: 'Vaultline Yoycol checkout currently ships to U.S. addresses only. Your payment was not captured.' }, 409);
   }
@@ -962,6 +967,7 @@ async function paypalCaptureOrder(request, env) {
     paid,
     status: payload?.status || null,
     orderId: payload?.id || orderId,
+    reference: vaultlineReference || null,
     fulfillmentStatus: paid ? 'PAID_AWAITING_MANUAL_PRODUCTION' : 'PAYMENT_NOT_COMPLETED'
   }, paid ? 200 : 409);
 }

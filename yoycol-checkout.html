@@ -18,7 +18,7 @@ body{background:#08090b;color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;mar
 .v-line:last-child{border-bottom:0}
 .v-name{font-weight:700}.v-meta{font-size:12px;color:#9097a1;margin-top:4px}
 .v-qty{display:flex;gap:8px;align-items:center}.v-qty button{background:#171a20;color:#fff;border:1px solid #343943;width:30px;height:30px}
-.v-total{display:flex;justify-content:space-between;font-size:22px;font-weight:700;margin:16px 0 4px}
+.v-summary-row{display:flex;justify-content:space-between;gap:16px;font-size:14px;color:#c4c8cf;margin:12px 0}.v-total{display:flex;justify-content:space-between;font-size:22px;font-weight:700;margin:18px 0 6px;padding-top:14px;border-top:1px solid #2a2e36}
 .v-small{font-size:12px;color:#8f96a0;line-height:1.5}
 .v-pay{width:100%;padding:14px 16px;margin-top:12px;border:1px solid #3b404a;background:#f1f1f1;color:#090a0c;font-weight:800;cursor:pointer}
 .v-pay.alt{background:#171a20;color:#fff}
@@ -40,8 +40,10 @@ body{background:#08090b;color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;mar
     </section>
     <aside class="v-panel">
       <div class="v-kicker">ORDER SUMMARY</div>
+      <div class="v-summary-row"><span>Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+      <div class="v-summary-row"><span>US Standard shipping</span><span id="cart-shipping">$0.00</span></div>
       <div class="v-total"><span>Total</span><span id="cart-total">$0.00</span></div>
-      <p class="v-small">Shipping and any applicable taxes are calculated during PayPal checkout. This order will remain <strong>Paid / Awaiting Production</strong> until it is manually released to Yoycol.</p>
+      <p class="v-small">Yoycol items currently ship to U.S. addresses only. Shipping is calculated automatically from the product type and quantity. This order remains <strong>Paid / Awaiting Production</strong> until it is manually released to Yoycol.</p>
       <div id="paypal-wrap" style="margin-top:14px"></div>
       <div id="checkout-error" class="v-error"></div>
     </aside>

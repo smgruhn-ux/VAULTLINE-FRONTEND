@@ -19,10 +19,20 @@ a{color:#fff}
 <div class="k">VAULTLINE BY GIZZY GRAVES</div>
 <h1>ORDER RECEIVED</h1>
 <div class="status">PAID / AWAITING PRODUCTION</div>
-<p>Your payment has been submitted. Yoycol production is not released automatically. The order remains on hold until the payment has settled and production is manually authorized.</p>
+<p>Your payment has been submitted. Yoycol production is not released automatically. The order remains on hold until the payment has settled and production is manually authorized.</p>\n<p id="order-ref" style="display:none;color:#e8e8e8"><strong>Vaultline order reference:</strong> <span></span></p>
 <p>This means the pre-production processing period may be longer than standard Vaultline items fulfilled through Fourthwall.</p>
 <p><a href="/shop">Return to shop</a></p>
 </main>
-<script>try{localStorage.removeItem('vaultline_yoycol_cart_v1')}catch{}</script>
+<script>
+try{localStorage.removeItem('vaultline_yoycol_cart_v1')}catch{}
+try{
+  const ref=new URLSearchParams(location.search).get('ref');
+  if(ref){
+    const row=document.getElementById('order-ref');
+    row.querySelector('span').textContent=ref;
+    row.style.display='block';
+  }
+}catch{}
+</script>
 </body>
 </html>

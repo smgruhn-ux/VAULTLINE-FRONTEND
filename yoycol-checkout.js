@@ -80,7 +80,7 @@ async function loadPaypal(clientId){
       onApprove:async data=>{
         try{
           const result=await post('/api/payments/paypal/capture-order',{orderId:data.orderID});
-          if(result.paid){localStorage.removeItem(CART_KEY);location.href='/order-received.html?provider=paypal&order='+encodeURIComponent(result.orderId)}
+          if(result.paid){localStorage.removeItem(CART_KEY);location.href='/order-received.html?provider=paypal&order='+encodeURIComponent(result.orderId)+(result.reference?'&ref='+encodeURIComponent(result.reference):'')}
         }catch(err){errorEl.textContent=err.message||'Payment could not be completed.'}
       },
       onError:err=>{console.error(err);errorEl.textContent='PayPal checkout failed. Please try again.'}

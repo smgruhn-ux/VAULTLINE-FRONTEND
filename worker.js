@@ -337,34 +337,34 @@ function yoycolTemplateMeta(template = {}) {
   };
 }
 
-function yoycolPriceOverrides(env) {
-  const raw = String(env.YOYCOL_PRICE_OVERRIDES || '').trim();
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-  } catch {
-    return {};
+function yoycolSupplierCost(value) {
+  if (!value || typeof value !== 'object') return 0;
+  const candidates = [
+    value.cost, value.COST,
+    value.price, value.PRICE,
+    value.productPrice, value.PRODUCTPRICE, value.product_price,
+    value.basePrice, value.BASEPRICE, value.base_price,
+    value.originalPrice, value.ORIGINALPRICE, value.original_price,
+    value.vipPrice, value.VIPPRICE, value.vip_price,
+    value.salePrice, value.SALEPRICE, value.sale_price,
+    value.unitPrice?.value, value.unit_price?.value,
+    value.price?.value, value.price?.amount,
+    value.priceInfo?.price, value.priceInfo?.cost,
+    value.price_info?.price, value.price_info?.cost
+  ];
+  for (const candidate of candidates) {
+    const n = Number(candidate);
+    if (Number.isFinite(n) && n > 0) return n;
   }
+  return 0;
 }
 
-function yoycolRetailPrice(template, env) {
-  const meta = yoycolTemplateMeta(template);
-  const overrides = yoycolPriceOverrides(env);
-  const override = yoycolNumber(
-    overrides[meta.rawId],
-    overrides[meta.designCode],
-    overrides[meta.productId]
-  );
-  if (override > 0) return override;
-
-  return yoycolNumber(
-    template.retailPrice, template.RETAILPRICE, template.retail_price,
-    template.salePrice, template.SALEPRICE, template.sale_price,
-    template.sellPrice, template.SELLPRICE, template.sell_price,
-    template.sellingPrice, template.SELLINGPRICE, template.selling_price,
-    template.priceInfo?.retailPrice, template.price_info?.retail_price
-  );
+// Vaultline boutique pricing rule:
+// whole-dollar customer price, always at least $3 and less than $4 above Yoycol item cost.
+function boutiqueRetailPrice(supplierCost) {
+  const cost = Number(supplierCost);
+  if (!Number.isFinite(cost) || cost <= 0) return 0;
+  return Math.ceil(cost + 3);
 }
 
 function yoycolRawVariants(template = {}) {
@@ -380,16 +380,19 @@ function yoycolRawVariants(template = {}) {
                     : (Array.isArray(template.sku_list) ? template.sku_list : [])))))))));
 }
 
-function mapYoycolVariant(rawId, variant, index, retailPrice, fallbackImages = []) {
+function mapYoycolVariant(rawId, variant, index, fallbackImages = []) {
   const rawVariantId = yoycolString(
     variant?.id, variant?.ID, variant?.variantId, variant?.VARIANTID, variant?.variant_id,
     variant?.skuId, variant?.SKUID, variant?.sku_id, variant?.sku, variant?.SKU,
     variant?.code, variant?.CODE, index
   );
   const images = [...new Set(yoycolImageUrls(variant))].slice(0, 4);
+  const supplierCost = yoycolSupplierCost(variant);
+  const retailPrice = boutiqueRetailPrice(supplierCost);
   return {
     id: 'yoycol:' + rawId + ':' + rawVariantId,
     providerVariantId: rawVariantId,
+    supplierCost,
     unitPrice: { value: retailPrice, currency: 'USD' },
     attributes: yoycolVariantAttributes(variant),
     images: (images.length ? images : fallbackImages.slice(0, 4)).map((url) => ({ url })),
@@ -413,27 +416,35 @@ async function mapYoycolTemplate(template = {}, env) {
     ...yoycolImageUrls(template)
   ])].slice(0, 18);
 
-  const retailPrice = yoycolRetailPrice(template, env);
   let rawVariants = yoycolRawVariants(template);
-
   if (!rawVariants.length && meta.productId) {
     rawVariants = await yoycolCatalogVariants(meta.productId, env);
   }
 
-  let variants = rawVariants.slice(0, 150).map((variant, index) =>
-    mapYoycolVariant(meta.rawId, variant, index, retailPrice, images)
-  );
+  let variants = rawVariants.slice(0, 150)
+    .map((variant, index) => mapYoycolVariant(meta.rawId, variant, index, images))
+    .filter((variant) => Number(variant?.unitPrice?.value || 0) > 0);
 
-  if (!variants.length && retailPrice > 0) {
-    variants = [{
-      id: 'yoycol:' + meta.rawId + ':default',
-      providerVariantId: 'default',
-      unitPrice: { value: retailPrice, currency: 'USD' },
-      attributes: {},
-      images: images.slice(0, 4).map((url) => ({ url })),
-      provider: 'yoycol'
-    }];
+  // Rare fallback for catalog responses that expose only a product-level cost.
+  if (!variants.length) {
+    const supplierCost = yoycolSupplierCost(template);
+    const retailPrice = boutiqueRetailPrice(supplierCost);
+    if (retailPrice > 0) {
+      variants = [{
+        id: 'yoycol:' + meta.rawId + ':default',
+        providerVariantId: 'default',
+        supplierCost,
+        unitPrice: { value: retailPrice, currency: 'USD' },
+        attributes: {},
+        images: images.slice(0, 4).map((url) => ({ url })),
+        provider: 'yoycol'
+      }];
+    }
   }
+
+  const retailPrices = variants.map((variant) => Number(variant?.unitPrice?.value || 0)).filter((n) => n > 0);
+  const supplierCosts = variants.map((variant) => Number(variant?.supplierCost || 0)).filter((n) => n > 0);
+  const startingRetailPrice = retailPrices.length ? Math.min(...retailPrices) : 0;
 
   return {
     id: 'yoycol:' + meta.rawId,
@@ -441,8 +452,11 @@ async function mapYoycolTemplate(template = {}, env) {
     providerId: meta.rawId,
     designCode: meta.designCode,
     productId: meta.productId,
-    purchasable: retailPrice > 0 && variants.length > 0,
-    needsRetailPrice: retailPrice <= 0,
+    purchasable: variants.length > 0 && startingRetailPrice > 0,
+    needsRetailPrice: variants.length === 0,
+    pricingRule: 'whole_dollar_plus_3_to_4',
+    supplierCostMin: supplierCosts.length ? Math.min(...supplierCosts) : 0,
+    supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.productName || meta.designName || 'Vaultline Yoycol piece',
     designName: meta.designName || '',
     slug: ('yoycol-' + meta.rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
@@ -451,7 +465,7 @@ async function mapYoycolTemplate(template = {}, env) {
       template.productDescription, template.PRODUCTDESCRIPTION, template.product_description,
       template.templateDescription, template.TEMPLATEDESCRIPTION, template.template_description
     ),
-    price: retailPrice,
+    price: startingRetailPrice,
     currency: 'USD',
     primaryImageUrl: images[0] || '',
     images: images.map((url) => ({ url })),
@@ -490,7 +504,10 @@ async function yoycolDiagnostics(env) {
       templateVariantCount: yoycolRawVariants(row).length,
       catalogVariantCount: catalogVariants.length,
       mappedVariantCount: mapped?.variants?.length || 0,
-      retailPrice: mapped?.price || 0,
+      supplierCostMin: mapped?.supplierCostMin || 0,
+      supplierCostMax: mapped?.supplierCostMax || 0,
+      customerPriceFrom: mapped?.price || 0,
+      pricingRule: mapped?.pricingRule || null,
       needsRetailPrice: Boolean(mapped?.needsRetailPrice)
     });
   }

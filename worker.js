@@ -523,7 +523,7 @@ async function yoycolStorefrontProducts(url, env) {
     const rows = yoycolArray(result.payload);
     for (const row of rows) {
       const mapped = await mapYoycolTemplate(row, env);
-      if (!mapped?.id || seen.has(mapped.id) || !isYoycolSellableTemplate(mapped)) continue;
+      if (!mapped?.id || seen.has(mapped.id) || !isYoycolSellableTemplate(mapped) || !mapped.purchasable) continue;
       seen.add(mapped.id);
       products.push(mapped);
     }

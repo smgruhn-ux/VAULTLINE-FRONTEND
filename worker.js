@@ -424,7 +424,7 @@ function yoycolRawVariants(template = {}) {
                     : (Array.isArray(template.sku_list) ? template.sku_list : [])))))))));
 }
 
-function mapYoycolVariant(rawId, variant, index, fallbackImages = []) {
+function mapYoycolVariant(rawId, variant, index, productRetailPrice, fallbackImages = []) {
   const rawVariantId = yoycolString(
     variant?.id, variant?.ID, variant?.variantId, variant?.VARIANTID, variant?.variant_id,
     variant?.skuId, variant?.SKUID, variant?.sku_id, variant?.sku, variant?.SKU,
@@ -432,12 +432,11 @@ function mapYoycolVariant(rawId, variant, index, fallbackImages = []) {
   );
   const images = [...new Set(yoycolImageUrls(variant))].slice(0, 4);
   const supplierCost = yoycolSupplierCost(variant);
-  const retailPrice = boutiqueRetailPrice(supplierCost);
   return {
     id: 'yoycol:' + rawId + ':' + rawVariantId,
     providerVariantId: rawVariantId,
     supplierCost,
-    unitPrice: { value: retailPrice, currency: 'USD' },
+    unitPrice: { value: productRetailPrice, currency: 'USD' },
     attributes: yoycolVariantAttributes(variant),
     images: (images.length ? images : fallbackImages.slice(0, 4)).map((url) => ({ url })),
     provider: 'yoycol'
@@ -465,20 +464,31 @@ async function mapYoycolTemplate(template = {}, env) {
     rawVariants = await yoycolCatalogVariants(meta.productId, env);
   }
 
-  let variants = rawVariants.slice(0, 150)
-    .map((variant, index) => mapYoycolVariant(meta.rawId, variant, index, images))
-    .filter((variant) => Number(variant?.unitPrice?.value || 0) > 0);
+  const rawSupplierCosts = rawVariants
+    .map((variant) => yoycolSupplierCost(variant))
+    .filter((n) => Number.isFinite(n) && n > 0);
+
+  // Use the highest-cost variant to set ONE clean boutique price for the whole product.
+  // That prevents confusing size-by-size price changes and protects the +$6 margin.
+  const maxVariantCost = rawSupplierCosts.length ? Math.max(...rawSupplierCosts) : 0;
+  let productRetailPrice = boutiqueRetailPrice(maxVariantCost);
+
+  let variants = productRetailPrice > 0
+    ? rawVariants.slice(0, 150).map((variant, index) =>
+        mapYoycolVariant(meta.rawId, variant, index, productRetailPrice, images)
+      )
+    : [];
 
   // Rare fallback for catalog responses that expose only a product-level cost.
   if (!variants.length) {
     const supplierCost = yoycolSupplierCost(template);
-    const retailPrice = boutiqueRetailPrice(supplierCost);
-    if (retailPrice > 0) {
+    productRetailPrice = boutiqueRetailPrice(supplierCost);
+    if (productRetailPrice > 0) {
       variants = [{
         id: 'yoycol:' + meta.rawId + ':default',
         providerVariantId: 'default',
         supplierCost,
-        unitPrice: { value: retailPrice, currency: 'USD' },
+        unitPrice: { value: productRetailPrice, currency: 'USD' },
         attributes: {},
         images: images.slice(0, 4).map((url) => ({ url })),
         provider: 'yoycol'
@@ -486,9 +496,8 @@ async function mapYoycolTemplate(template = {}, env) {
     }
   }
 
-  const retailPrices = variants.map((variant) => Number(variant?.unitPrice?.value || 0)).filter((n) => n > 0);
   const supplierCosts = variants.map((variant) => Number(variant?.supplierCost || 0)).filter((n) => n > 0);
-  const startingRetailPrice = retailPrices.length ? Math.min(...retailPrices) : 0;
+  const startingRetailPrice = productRetailPrice;
 
   return {
     id: 'yoycol:' + meta.rawId,
@@ -498,7 +507,7 @@ async function mapYoycolTemplate(template = {}, env) {
     productId: meta.productId,
     purchasable: variants.length > 0 && startingRetailPrice > 0,
     needsRetailPrice: variants.length === 0,
-    pricingRule: 'whole_dollar_plus_6',
+    pricingRule: 'uniform_whole_dollar_from_highest_variant_cost_plus_6',
     supplierCostMin: supplierCosts.length ? Math.min(...supplierCosts) : 0,
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.productName || meta.designName || 'Vaultline Yoycol piece',

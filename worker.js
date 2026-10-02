@@ -526,6 +526,82 @@ async function mapYoycolTemplate(template = {}, env) {
   };
 }
 
+
+async function yoycolCatalogProduct(productId, env) {
+  if (!productId) return { payload: null, error: 'missing product id' };
+  const result = await yoycolGet('/catalog/products/' + encodeURIComponent(productId), env);
+  if (result.error) {
+    let details = {};
+    try { details = await result.error.clone().json(); } catch {}
+    return { payload: null, error: details?.error || 'catalog product lookup failed' };
+  }
+  return { payload: result.payload, error: null };
+}
+
+function yoycolShippingFieldProbe(value) {
+  const out = [];
+  const seen = new Set();
+  const visit = (node, path = '', shippingContext = false, depth = 0) => {
+    if (node == null || depth > 7 || out.length >= 80) return;
+
+    if (Array.isArray(node)) {
+      for (let i = 0; i < Math.min(node.length, 8); i += 1) {
+        visit(node[i], path + '[' + i + ']', shippingContext, depth + 1);
+      }
+      return;
+    }
+
+    if (typeof node !== 'object') return;
+
+    for (const [key, child] of Object.entries(node)) {
+      if (out.length >= 80) break;
+      const nextPath = path ? path + '.' + key : key;
+      const keyShipping = /ship|shipping|freight|logistic|delivery|carrier|express|standard|fast|zone|region|country|firstitem|additional/i.test(key);
+      const nextContext = shippingContext || keyShipping;
+
+      if (nextContext && (typeof child === 'string' || typeof child === 'number' || typeof child === 'boolean')) {
+        const text = String(child);
+        if (text.length <= 160) {
+          const sig = nextPath + '=' + text;
+          if (!seen.has(sig)) {
+            seen.add(sig);
+            out.push({ path: nextPath, value: child });
+          }
+        }
+      }
+
+      if (child && typeof child === 'object') {
+        visit(child, nextPath, nextContext, depth + 1);
+      }
+    }
+  };
+  visit(value);
+  return out;
+}
+
+async function yoycolShippingProbe(productId, env) {
+  const detail = await yoycolCatalogProduct(productId, env);
+  const detailFields = detail.payload ? yoycolShippingFieldProbe(detail.payload) : [];
+
+  let shippingEndpoint = { ok: false, error: null, fields: [] };
+  const shippingResult = await yoycolGet('/catalog/products/' + encodeURIComponent(productId) + '/shipping', env);
+  if (shippingResult.error) {
+    let details = {};
+    try { details = await shippingResult.error.clone().json(); } catch {}
+    shippingEndpoint.error = details?.error || 'shipping endpoint unavailable';
+  } else {
+    shippingEndpoint.ok = true;
+    shippingEndpoint.fields = yoycolShippingFieldProbe(shippingResult.payload);
+  }
+
+  return {
+    productDetailAvailable: Boolean(detail.payload),
+    productDetailError: detail.error,
+    productDetailShippingFields: detailFields.slice(0, 50),
+    shippingEndpoint
+  };
+}
+
 async function yoycolDiagnostics(env) {
   const result = await yoycolGet('/product_templates', env, { page: 1, size: 10 });
   if (result.error) {
@@ -546,6 +622,7 @@ async function yoycolDiagnostics(env) {
     const meta = yoycolTemplateMeta(row);
     const catalogVariants = meta.productId ? await yoycolCatalogVariants(meta.productId, env) : [];
     const mapped = await mapYoycolTemplate(row, env);
+    const shippingProbe = meta.productId ? await yoycolShippingProbe(meta.productId, env) : null;
     samples.push({
       keys: Object.keys(row || {}).slice(0, 40),
       id: mapped?.providerId || null,
@@ -567,7 +644,8 @@ async function yoycolDiagnostics(env) {
       supplierCostMax: mapped?.supplierCostMax || 0,
       customerPriceFrom: mapped?.price || 0,
       pricingRule: mapped?.pricingRule || null,
-      needsRetailPrice: Boolean(mapped?.needsRetailPrice)
+      needsRetailPrice: Boolean(mapped?.needsRetailPrice),
+      shippingProbe
     });
   }
 

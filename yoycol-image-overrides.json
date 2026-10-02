@@ -1,0 +1,9 @@
+{
+  "byProviderId": {},
+  "byDesignCode": {},
+  "_notes": {
+    "purpose": "Vaultline-controlled storefront photography for Yoycol products.",
+    "usage": "Add an override keyed by Yoycol provider/template ID or design code. Example: {\"primary\":\"/assets/yoycol-overrides/PMS5C-01.webp\",\"images\":[\"/assets/yoycol-overrides/PMS5C-01.webp\",\"/assets/yoycol-overrides/PMS5C-02.webp\"],\"replaceGallery\":true}",
+    "behavior": "replaceGallery defaults to true. Set false to keep Yoycol mockups after the custom images."
+  }
+}

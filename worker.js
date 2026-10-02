@@ -360,11 +360,11 @@ function yoycolSupplierCost(value) {
 }
 
 // Vaultline boutique pricing rule:
-// whole-dollar customer price, always at least $3 and less than $4 above Yoycol item cost.
+// Vaultline boutique pricing: add $6 to Yoycol item cost, then round up to a whole dollar.
 function boutiqueRetailPrice(supplierCost) {
   const cost = Number(supplierCost);
   if (!Number.isFinite(cost) || cost <= 0) return 0;
-  return Math.ceil(cost + 3);
+  return Math.ceil(cost + 6);
 }
 
 function yoycolRawVariants(template = {}) {
@@ -454,7 +454,7 @@ async function mapYoycolTemplate(template = {}, env) {
     productId: meta.productId,
     purchasable: variants.length > 0 && startingRetailPrice > 0,
     needsRetailPrice: variants.length === 0,
-    pricingRule: 'whole_dollar_plus_3_to_4',
+    pricingRule: 'whole_dollar_plus_6',
     supplierCostMin: supplierCosts.length ? Math.min(...supplierCosts) : 0,
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.productName || meta.designName || 'Vaultline Yoycol piece',

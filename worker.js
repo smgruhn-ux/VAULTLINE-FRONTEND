@@ -39,6 +39,9 @@ function mapProduct(product) {
     name: product.name,
     slug: product.slug,
     description: product.description || '',
+    publishedAt: product.publishedAt || product.published_at || product.createdAt || product.created_at || product.updatedAt || product.updated_at || '',
+    createdAt: product.createdAt || product.created_at || '',
+    updatedAt: product.updatedAt || product.updated_at || '',
     price: variants[0]?.unitPrice?.value || 0,
     currency: variants[0]?.unitPrice?.currency || 'USD',
     primaryImageUrl: imageUrl(images[0]),
@@ -333,6 +336,14 @@ function yoycolTemplateMeta(template = {}) {
     previewImage: yoycolString(
       template.previewImage, template.PREVIEWIMAGE, template.preview_image, template.mockupUrl,
       template.MOCKUPURL, template.imageUrl, template.IMAGEURL
+    ),
+    createdAt: yoycolString(
+      template.createdAt, template.CREATEDAT, template.created_at,
+      template.createTime, template.CREATETIME, template.create_time
+    ),
+    updatedAt: yoycolString(
+      template.updatedAt, template.UPDATEDAT, template.updated_at,
+      template.updateTime, template.UPDATETIME, template.update_time
     )
   };
 }
@@ -512,6 +523,9 @@ async function mapYoycolTemplate(template = {}, env) {
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
     name: meta.productName || meta.designName || 'Vaultline Yoycol piece',
     designName: meta.designName || '',
+    publishedAt: meta.updatedAt || meta.createdAt || '',
+    createdAt: meta.createdAt || '',
+    updatedAt: meta.updatedAt || '',
     slug: ('yoycol-' + meta.rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
     description: yoycolString(
       template.description, template.DESCRIPTION, template.desc, template.DESC,

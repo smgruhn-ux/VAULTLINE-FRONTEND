@@ -521,7 +521,7 @@ async function mapYoycolTemplate(template = {}, env) {
     pricingRule: 'uniform_whole_dollar_from_highest_variant_cost_plus_6',
     supplierCostMin: supplierCosts.length ? Math.min(...supplierCosts) : 0,
     supplierCostMax: supplierCosts.length ? Math.max(...supplierCosts) : 0,
-    name: meta.productName || meta.designName || 'Vaultline Yoycol piece',
+    name: meta.designName || meta.productName || 'Vaultline Yoycol piece',
     designName: meta.designName || '',
     publishedAt: meta.updatedAt || meta.createdAt || '',
     createdAt: meta.createdAt || '',

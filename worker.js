@@ -201,13 +201,43 @@ async function yoycolStatus(env) {
 }
 
 function yoycolArray(payload) {
-  const candidates = [
+  const direct = [
     payload?.data?.items, payload?.data?.results, payload?.data?.list, payload?.data?.records,
-    payload?.data?.productTemplates, payload?.data?.product_templates,
+    payload?.data?.productTemplates, payload?.data?.product_templates, payload?.data?.templates,
     payload?.items, payload?.results, payload?.list, payload?.records,
-    payload?.productTemplates, payload?.product_templates, payload?.data
-  ];
-  return candidates.find(Array.isArray) || [];
+    payload?.productTemplates, payload?.product_templates, payload?.templates, payload?.data
+  ].find(Array.isArray);
+  if (direct) return direct;
+
+  const arrays = [];
+  const visit = (value, depth = 0) => {
+    if (!value || depth > 6) return;
+    if (Array.isArray(value)) {
+      if (value.length) arrays.push(value);
+      for (const item of value.slice(0, 5)) visit(item, depth + 1);
+      return;
+    }
+    if (typeof value === 'object') {
+      for (const child of Object.values(value)) visit(child, depth + 1);
+    }
+  };
+  visit(payload);
+
+  const score = (arr) => {
+    const sample = arr.slice(0, 5).filter((x) => x && typeof x === 'object');
+    let points = sample.length * 2;
+    for (const row of sample) {
+      const keys = Object.keys(row).join(' ').toLowerCase();
+      if (/template|design/.test(keys)) points += 8;
+      if (/mockup|preview|image/.test(keys)) points += 5;
+      if (/product|spu|sku/.test(keys)) points += 4;
+      if (/name|title/.test(keys)) points += 2;
+      if (/(^|\s)id(\s|$)|code|no/.test(keys)) points += 2;
+    }
+    return points;
+  };
+
+  return arrays.sort((a, b) => score(b) - score(a))[0] || [];
 }
 
 function yoycolString(...values) {
@@ -226,24 +256,32 @@ function yoycolNumber(...values) {
   return 0;
 }
 
-function yoycolImageUrls(value, out = []) {
-  if (!value || out.length >= 24) return out;
+function yoycolImageUrls(value, out = [], depth = 0) {
+  if (!value || out.length >= 40 || depth > 7) return out;
   if (typeof value === 'string') {
-    if (/^https?:\/\//i.test(value) && /\.(?:png|jpe?g|webp)(?:\?|$)/i.test(value)) out.push(value);
+    const candidate = value.trim();
+    if (
+      /^https?:\/\//i.test(candidate) &&
+      (
+        /\.(?:png|jpe?g|webp|gif)(?:\?|#|$)/i.test(candidate) ||
+        /image|img|mockup|preview|thumbnail|thumb|render|cdn|cloud\.yoycol/i.test(candidate)
+      )
+    ) out.push(candidate);
     return out;
   }
   if (Array.isArray(value)) {
-    for (const item of value) yoycolImageUrls(item, out);
+    for (const item of value) yoycolImageUrls(item, out, depth + 1);
     return out;
   }
   if (typeof value === 'object') {
-    for (const key of ['url','imageUrl','image_url','mockupUrl','mockup_url','previewUrl','preview_url','src']) {
-      const candidate = value[key];
-      if (typeof candidate === 'string' && /^https?:\/\//i.test(candidate)) out.push(candidate);
+    for (const [key, child] of Object.entries(value)) {
+      if (
+        typeof child === 'string' &&
+        /image|img|mockup|preview|thumbnail|thumb|render|cover|photo|url|src/i.test(key) &&
+        /^https?:\/\//i.test(child.trim())
+      ) out.push(child.trim());
     }
-    for (const key of ['images','mockups','previews','previewImages','preview_images','variants']) {
-      if (value[key]) yoycolImageUrls(value[key], out);
-    }
+    for (const child of Object.values(value)) yoycolImageUrls(child, out, depth + 1);
   }
   return out;
 }
@@ -259,18 +297,23 @@ function yoycolVariantAttributes(variant = {}) {
 }
 
 function mapYoycolTemplate(template = {}) {
-  const rawId = yoycolString(template.id, template.templateId, template.template_id, template.designId, template.design_id, template.uuid);
+  const rawId = yoycolString(template.id, template.templateId, template.template_id, template.templateNo, template.template_no, template.templateCode, template.template_code, template.designId, template.design_id, template.designNo, template.design_no, template.code, template.uuid);
   if (!rawId) return null;
 
   const rawVariants = Array.isArray(template.variants)
     ? template.variants
-    : (Array.isArray(template.variantList) ? template.variantList : (Array.isArray(template.variant_list) ? template.variant_list : []));
+    : (Array.isArray(template.variantList) ? template.variantList
+      : (Array.isArray(template.variant_list) ? template.variant_list
+        : (Array.isArray(template.skus) ? template.skus
+          : (Array.isArray(template.skuList) ? template.skuList
+            : (Array.isArray(template.sku_list) ? template.sku_list : [])))));
 
   const images = [...new Set(yoycolImageUrls(template))].slice(0, 18);
   const price = yoycolNumber(
     template.retailPrice, template.retail_price, template.salePrice, template.sale_price,
-    template.price, template.basePrice, template.base_price,
-    rawVariants[0]?.retailPrice, rawVariants[0]?.retail_price, rawVariants[0]?.price
+    template.price, template.sellPrice, template.sell_price, template.sellingPrice, template.selling_price,
+    template.priceInfo?.retailPrice, template.price_info?.retail_price,
+    rawVariants[0]?.retailPrice, rawVariants[0]?.retail_price, rawVariants[0]?.salePrice, rawVariants[0]?.sale_price, rawVariants[0]?.price
   );
 
   let variants = rawVariants.slice(0, 100).map((variant, index) => ({
@@ -295,15 +338,51 @@ function mapYoycolTemplate(template = {}) {
     provider: 'yoycol',
     providerId: rawId,
     purchasable: price > 0 && variants.length > 0,
-    name: yoycolString(template.name, template.title, template.templateName, template.template_name, template.productName, template.product_name) || 'Vaultline Yoycol piece',
+    name: yoycolString(template.name, template.title, template.designName, template.design_name, template.templateName, template.template_name, template.productName, template.product_name, template.spuName, template.spu_name) || 'Vaultline Yoycol piece',
     slug: ('yoycol-' + rawId).replace(/[^A-Za-z0-9_-]/g, '-'),
-    description: yoycolString(template.description, template.desc, template.productDescription, template.product_description),
+    description: yoycolString(template.description, template.desc, template.productDescription, template.product_description, template.templateDescription, template.template_description),
     price,
     currency: 'USD',
     primaryImageUrl: images[0] || '',
     images: images.map((url) => ({ url })),
     variants
   };
+}
+
+async function yoycolDiagnostics(env) {
+  const result = await yoycolGet('/product_templates', env, { page: 1, size: 10 });
+  if (result.error) {
+    let details = {};
+    try { details = await result.error.clone().json(); } catch {}
+    return json({
+      ok: false,
+      endpoint: '/product_templates',
+      error: details?.error || 'Template API request failed.',
+      code: details?.code || null,
+      upstreamStatus: details?.upstreamStatus || null
+    }, 200);
+  }
+
+  const rows = yoycolArray(result.payload);
+  const samples = rows.slice(0, 5).map((row) => {
+    const mapped = mapYoycolTemplate(row);
+    return {
+      keys: Object.keys(row || {}).slice(0, 40),
+      id: mapped?.providerId || null,
+      name: mapped?.name || null,
+      imageCount: mapped?.images?.length || 0,
+      variantCount: mapped?.variants?.length || 0,
+      price: mapped?.price || 0
+    };
+  });
+
+  return json({
+    ok: true,
+    endpoint: '/product_templates',
+    rawTopLevelKeys: Object.keys(result.payload || {}),
+    rowCount: rows.length,
+    samples
+  });
 }
 
 async function yoycolStorefrontProducts(url, env) {
@@ -595,6 +674,11 @@ export default {
     if (url.pathname === '/api/yoycol/products') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
       return yoycolStorefrontProducts(url, env);
+    }
+
+    if (url.pathname === '/api/yoycol/diagnostics') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
+      return yoycolDiagnostics(env);
     }
 
     if (url.pathname === '/api/payments/config') {

@@ -504,6 +504,13 @@ async function yoycolDiagnostics(env) {
   });
 }
 
+function isYoycolSellableTemplate(product) {
+  const name = String(product?.name || '').toLowerCase();
+  const designName = String(product?.designName || '').toLowerCase();
+  const combined = name + ' ' + designName;
+  return !/(hang\s*tag|packag(?:e|ing)\s*bag|neck\s*label|care\s*label|brand(?:ing)?\s*label|thank\s*you\s*card|insert\s*card)/i.test(combined);
+}
+
 async function yoycolStorefrontProducts(url, env) {
   const requestedSize = Math.max(1, Math.min(50, Number.parseInt(url.searchParams.get('size') || '50', 10) || 50));
   const products = [];
@@ -516,7 +523,7 @@ async function yoycolStorefrontProducts(url, env) {
     const rows = yoycolArray(result.payload);
     for (const row of rows) {
       const mapped = await mapYoycolTemplate(row, env);
-      if (!mapped?.id || seen.has(mapped.id)) continue;
+      if (!mapped?.id || seen.has(mapped.id) || !isYoycolSellableTemplate(mapped)) continue;
       seen.add(mapped.id);
       products.push(mapped);
     }

@@ -73,9 +73,11 @@ function normalizeOverrideImages(value){
 function applyYoycolImageOverrides(products,manifest){
   const byProviderId=manifest?.byProviderId||{};
   const byDesignCode=manifest?.byDesignCode||{};
+  const byName=manifest?.byName||{};
   return products.map(p=>{
     if(p.provider!=='yoycol')return p;
-    const override=byProviderId[p.providerId]||byDesignCode[p.designCode];
+    const nameKey=String(p.name||'').trim().toLowerCase();
+    const override=byProviderId[p.providerId]||byDesignCode[p.designCode]||byName[nameKey];
     if(!override)return p;
     const custom=normalizeOverrideImages(override.images||override.gallery||override.primary);
     const primary=typeof override.primary==='string'?override.primary:(custom[0]||p.image);

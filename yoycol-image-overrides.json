@@ -14,7 +14,17 @@
         "/assets/yoycol-overrides/crimson-abyss-front.webp",
         "/assets/yoycol-overrides/crimson-abyss-back.webp"
       ],
-      "replaceGallery": true
+      "replaceGallery": true,
+      "hideVariantColor": true
+    },
+    "vaultline ashen high-stretch shorts": {
+      "primary": "/assets/yoycol-overrides/ashen-high-stretch-front.webp",
+      "images": [
+        "/assets/yoycol-overrides/ashen-high-stretch-front.webp",
+        "/assets/yoycol-overrides/ashen-high-stretch-back.webp"
+      ],
+      "replaceGallery": true,
+      "hideVariantColor": true
     }
   }
 }
